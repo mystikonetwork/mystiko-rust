@@ -8,11 +8,11 @@ pub type RuleValidatorResult<T> = anyhow::Result<T, RuleValidatorError>;
 pub enum RuleValidatorError {
     #[error("rule validator checker type {0} error")]
     RuleValidatorCheckerTypeError(i32),
-    #[error("invalid validate concurrency error")]
+    #[error("rule validator invalid validate concurrency error")]
     InvalidValidateConcurrencyError,
-    #[error("data to be validated is empty error")]
+    #[error("rule validator data to be validated is empty error")]
     EmptyValidateDataError,
-    #[error("chain {0} not found error")]
+    #[error("rule validator chain {0} not found error")]
     ChainNotFoundError(u64),
     #[error(transparent)]
     DataMergeError(#[from] DataMergeError),

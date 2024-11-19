@@ -1,18 +1,21 @@
 use crate::handler::SpendContext;
 use crate::{CommitmentPoolContractHandler, Spend, Spends, SpendsError};
+use mystiko_datapacker_client::DataPackerClient;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::Wallet;
 use mystiko_protos::core::handler::v1::CreateSpendOptions;
 use mystiko_protos::core::v1::SpendStatus;
+use mystiko_protos::data::v1::{ChainData, MerkleTree};
 use mystiko_relayer_client::RelayerClient;
 use mystiko_storage::{StatementFormatter, Storage};
 use num_bigint::BigUint;
 use num_traits::Zero;
 
-impl<F, S, A, C, T, P, R, V> Spends<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,
+    K: DataPackerClient<ChainData, MerkleTree>,
     C: CommitmentPoolContractHandler,
     R: RelayerClient,
     SpendsError: From<C::Error> + From<R::Error>,

@@ -1,18 +1,20 @@
 use crate::common::{create_database, MockProvider, MockProviders};
 use crate::handler::{
-    MockCommitmentPoolContracts, MockPublicAssets, MockRelayerClient, MockStaticCache, MockTransactions, MockZKProver,
+    MockCommitmentPoolContracts, MockDataPackerClient, MockPublicAssets, MockRelayerClient, MockStaticCache,
+    MockTransactions, MockZKProver,
 };
 use mystiko_config::{MystikoConfig, PoolContractConfig};
 use mystiko_core::{
     AccountHandler, Accounts, Commitment, Database, Spends, SpendsError, SpendsOptions, WalletHandler, Wallets,
 };
 use mystiko_crypto::crypto::encrypt_asymmetric;
+use mystiko_datapacker_client::DataPackerClient;
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::{Account, Wallet};
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions};
-use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{ChainData, CommitmentStatus, MerkleTree as ProtoMerkleTree};
 use mystiko_relayer_client::RelayerClient;
 use mystiko_static_cache::StaticCache;
 use mystiko_storage::{Document, SqlStatementFormatter};
@@ -25,7 +27,7 @@ use typed_builder::TypedBuilder;
 
 pub(crate) type DatabaseType = Database<SqlStatementFormatter, SqliteStorage>;
 
-pub(crate) type SpendsOptionsType<R = MockRelayerClient> = SpendsOptions<
+pub(crate) type SpendsOptionsType<R = MockRelayerClient, K = MockDataPackerClient> = SpendsOptions<
     SqlStatementFormatter,
     SqliteStorage,
     MockPublicAssets,
@@ -34,9 +36,10 @@ pub(crate) type SpendsOptionsType<R = MockRelayerClient> = SpendsOptions<
     MockProviders,
     R,
     MockZKProver,
+    K,
 >;
 
-pub(crate) type SpendsType<R = MockRelayerClient> = Spends<
+pub(crate) type SpendsType<R = MockRelayerClient, K = MockDataPackerClient> = Spends<
     SqlStatementFormatter,
     SqliteStorage,
     MockPublicAssets,
@@ -45,11 +48,12 @@ pub(crate) type SpendsType<R = MockRelayerClient> = Spends<
     MockProviders,
     R,
     MockZKProver,
+    K,
 >;
 
 #[derive(Debug, Default, TypedBuilder)]
 #[builder(field_defaults(default, setter(into)))]
-pub(crate) struct MockOptions<R: Default = MockRelayerClient> {
+pub(crate) struct MockOptions<R: Default = MockRelayerClient, K: Default = MockDataPackerClient> {
     pub(crate) config: Option<MystikoConfig>,
     pub(crate) assets: MockPublicAssets,
     pub(crate) commitment_pool_contracts: MockCommitmentPoolContracts,
@@ -58,6 +62,7 @@ pub(crate) struct MockOptions<R: Default = MockRelayerClient> {
     pub(crate) relayer_client: R,
     pub(crate) prover: MockZKProver,
     pub(crate) providers: HashMap<u64, MockProvider>,
+    pub(crate) data_packer_client: K,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -74,9 +79,10 @@ pub(crate) struct CommitmentOptions {
     pub(crate) leaf_index: Option<u64>,
 }
 
-pub(crate) async fn setup<R>(options: MockOptions<R>) -> (Arc<MystikoConfig>, Arc<DatabaseType>, SpendsType<R>)
+pub(crate) async fn setup<R, K>(options: MockOptions<R, K>) -> (Arc<MystikoConfig>, Arc<DatabaseType>, SpendsType<R, K>)
 where
     R: RelayerClient + Default,
+    K: DataPackerClient<ChainData, ProtoMerkleTree> + Default,
     SpendsError: From<R::Error>,
 {
     let _ = env_logger::builder()
@@ -91,17 +97,24 @@ where
     );
     let database = Arc::new(create_database().await);
     database.migrate().await.unwrap();
-    let mut raw_providers = options
+    let (raw_providers, mut raw_signer_providers): (HashMap<_, _>, HashMap<_, _>) = options
         .providers
         .into_iter()
         .map(|(chain_id, provider)| {
-            let provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
-            (chain_id, provider)
+            let wrapped_provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
+            ((chain_id, wrapped_provider.clone()), (chain_id, wrapped_provider))
         })
-        .collect::<HashMap<_, _>>();
+        .unzip();
     let mut providers = MockProviders::new();
     providers.expect_get_provider().returning(move |chain_id| {
         raw_providers
+            .get(&chain_id)
+            .cloned()
+            .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
+    });
+    let mut signer_providers = MockProviders::new();
+    signer_providers.expect_get_provider().returning(move |chain_id| {
+        raw_signer_providers
             .remove(&chain_id)
             .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
     });
@@ -114,7 +127,9 @@ where
         .static_cache(Box::new(options.static_cache) as Box<dyn StaticCache>)
         .relayers(options.relayer_client)
         .prover(options.prover)
-        .signer_providers(providers)
+        .providers(providers)
+        .signer_providers(signer_providers)
+        .packer(options.data_packer_client)
         .build();
     let handler = SpendsType::new(handler_options);
     (config, database, handler)

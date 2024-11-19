@@ -714,6 +714,12 @@ impl serde::Serialize for SpendError {
             Self::GetMystikoGuardError => "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR",
             Self::GrpcConnectError => "SPEND_ERROR_GRPC_CONNECT_ERROR",
+            Self::StdIoError => "SPEND_ERROR_STD_IO_ERROR",
+            Self::ProtosError => "SPEND_ERROR_PROTOS_ERROR",
+            Self::FetcherError => "SPEND_ERROR_FETCHER_ERROR",
+            Self::MissingResourceError => "SPEND_ERROR_MISSING_RESOURCE_ERROR",
+            Self::RawResourceError => "SPEND_ERROR_RAW_RESOURCE_ERROR",
+            Self::FetchFromProviderError => "SPEND_ERROR_FETCH_FROM_PROVIDER_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -769,6 +775,12 @@ impl<'de> serde::Deserialize<'de> for SpendError {
             "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR",
             "SPEND_ERROR_GRPC_CONNECT_ERROR",
+            "SPEND_ERROR_STD_IO_ERROR",
+            "SPEND_ERROR_PROTOS_ERROR",
+            "SPEND_ERROR_FETCHER_ERROR",
+            "SPEND_ERROR_MISSING_RESOURCE_ERROR",
+            "SPEND_ERROR_RAW_RESOURCE_ERROR",
+            "SPEND_ERROR_FETCH_FROM_PROVIDER_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -855,6 +867,12 @@ impl<'de> serde::Deserialize<'de> for SpendError {
                     "SPEND_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(SpendError::GetMystikoGuardError),
                     "SPEND_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(SpendError::DeserializeMessageError),
                     "SPEND_ERROR_GRPC_CONNECT_ERROR" => Ok(SpendError::GrpcConnectError),
+                    "SPEND_ERROR_STD_IO_ERROR" => Ok(SpendError::StdIoError),
+                    "SPEND_ERROR_PROTOS_ERROR" => Ok(SpendError::ProtosError),
+                    "SPEND_ERROR_FETCHER_ERROR" => Ok(SpendError::FetcherError),
+                    "SPEND_ERROR_MISSING_RESOURCE_ERROR" => Ok(SpendError::MissingResourceError),
+                    "SPEND_ERROR_RAW_RESOURCE_ERROR" => Ok(SpendError::RawResourceError),
+                    "SPEND_ERROR_FETCH_FROM_PROVIDER_ERROR" => Ok(SpendError::FetchFromProviderError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

@@ -1,3 +1,4 @@
+use crate::handler::spend::merkle::CacheMerkleTree;
 use crate::handler::{format_spend_log, wrap_filter};
 use crate::{
     CommitmentPoolContractHandler, CommitmentPoolContracts, Database, FromContext, MystikoContext, MystikoError,
@@ -7,6 +8,8 @@ use crate::{
 use async_trait::async_trait;
 use mystiko_config::MystikoConfig;
 use mystiko_crypto::zkp::{G16Proof, G16Prover, ZKProver};
+use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
+use mystiko_datapacker_client::DataPackerClient;
 use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::core::document::v1::Spend as ProtoSpend;
@@ -14,6 +17,7 @@ use mystiko_protos::core::handler::v1::{
     CreateSpendOptions, QuoteSpendOptions, SendSpendOptions, SpendQuote, SpendSummary,
 };
 use mystiko_protos::core::v1::Transaction;
+use mystiko_protos::data::v1::{ChainData, MerkleTree};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
 use mystiko_relayer_client::v2::client::RelayerClientV2;
 use mystiko_relayer_client::RelayerClient;
@@ -38,6 +42,7 @@ pub struct Spends<
     P = Box<dyn Providers>,
     R = RelayerClientV2,
     V = G16Prover,
+    K = DataPackerClientV1,
 > {
     pub(crate) db: Arc<Database<F, S>>,
     pub(crate) static_cache: Arc<GzipStaticCache>,
@@ -46,9 +51,12 @@ pub struct Spends<
     pub(crate) assets: Arc<A>,
     pub(crate) commitment_pool_contracts: Arc<C>,
     pub(crate) transactions: Arc<T>,
+    pub(crate) providers: Arc<P>,
     pub(crate) signer_providers: Arc<P>,
     pub(crate) relayers: Arc<R>,
     pub(crate) prover: Arc<V>,
+    pub(crate) packer: Arc<K>,
+    pub(crate) cache_tree: CacheMerkleTree,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -62,6 +70,7 @@ pub struct SpendsOptions<
     P = Box<dyn Providers>,
     R = RelayerClientV2,
     V = G16Prover,
+    K = DataPackerClientV1,
 > {
     db: Arc<Database<F, S>>,
     static_cache: Arc<Box<dyn StaticCache>>,
@@ -69,17 +78,19 @@ pub struct SpendsOptions<
     commitment_pool_contracts: Arc<C>,
     assets: Arc<A>,
     transactions: Arc<T>,
+    providers: Arc<P>,
     signer_providers: Arc<P>,
     relayers: Arc<R>,
     prover: Arc<V>,
+    packer: Arc<K>,
 }
 
 type Result<T, E = SpendsError> = std::result::Result<T, E>;
 
 #[async_trait]
-impl<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K>
     SpendHandler<ProtoSpend, QuoteSpendOptions, SpendQuote, CreateSpendOptions, SpendSummary, SendSpendOptions>
-    for Spends<F, S, A, C, T, P, R, V>
+    for Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,
@@ -89,6 +100,7 @@ where
     P: Providers + 'static,
     R: RelayerClient,
     V: ZKProver<G16Proof>,
+    K: DataPackerClient<ChainData, MerkleTree>,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {
@@ -306,6 +318,7 @@ where
 {
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
         let relayers = RelayerClientV2::new(context.providers.clone(), context.relayer_client_options.clone()).await?;
+        let packer = DataPackerClientV1::new(context.config.clone());
         let options = SpendsOptions::<F, S, A, C, T>::builder()
             .db(context.db.clone())
             .static_cache(context.static_cache.clone())
@@ -313,15 +326,17 @@ where
             .assets(A::from_context(context).await?)
             .commitment_pool_contracts(C::from_context(context).await?)
             .transactions(T::from_context(context).await?)
+            .providers(context.providers.clone())
             .signer_providers(context.signer_providers.clone())
             .relayers(relayers)
             .prover(G16Prover)
+            .packer(packer)
             .build();
         Ok(Self::new(options))
     }
 }
 
-impl<F, S, A, C, T, P, R, V> Spends<F, S, A, C, T, P, R, V>
+impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
 where
     F: StatementFormatter,
     S: Storage,
@@ -331,9 +346,10 @@ where
     P: Providers + 'static,
     R: RelayerClient,
     V: ZKProver<G16Proof>,
+    K: DataPackerClient<ChainData, MerkleTree>,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {
-    pub fn new(options: SpendsOptions<F, S, A, C, T, P, R, V>) -> Self {
+    pub fn new(options: SpendsOptions<F, S, A, C, T, P, R, V, K>) -> Self {
         let wallets = Wallets::new(options.db.clone());
         Self::builder()
             .db(options.db)
@@ -343,9 +359,12 @@ where
             .assets(options.assets)
             .commitment_pool_contracts(options.commitment_pool_contracts)
             .transactions(options.transactions)
+            .providers(options.providers)
             .signer_providers(options.signer_providers)
             .relayers(options.relayers)
             .prover(options.prover)
+            .packer(options.packer)
+            .cache_tree(CacheMerkleTree::new())
             .build()
     }
 }

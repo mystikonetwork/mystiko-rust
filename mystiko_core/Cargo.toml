@@ -22,6 +22,7 @@ mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "da78078" }
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a", features = ["zkp"] }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
+mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_client" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a" }
@@ -47,6 +48,8 @@ thiserror = { version = "1.0", default-features = false }
 tokio = { version = "1.27.0", features = ["sync", "time"] }
 tonic = { version = "0.9.2", features = ["tls"] }
 typed-builder = { version = "0.15.2" }
+zstd = { version = "0.13.2" }
+prost = { version = "0.11.9" }
 
 [dev-dependencies]
 env_logger = { version = "0.10.0" }

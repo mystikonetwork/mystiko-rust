@@ -1768,6 +1768,10 @@ impl serde::Serialize for SpendStatus {
     {
         let variant = match self {
             Self::Unspecified => "SPEND_STATUS_UNSPECIFIED",
+            Self::MerkleTreeFetching => "SPEND_STATUS_MERKLE_TREE_FETCHING",
+            Self::MerkleTreeFetched => "SPEND_STATUS_MERKLE_TREE_FETCHED",
+            Self::StaticAssetsFetching => "SPEND_STATUS_STATIC_ASSETS_FETCHING",
+            Self::StaticAssetsFetched => "SPEND_STATUS_STATIC_ASSETS_FETCHED",
             Self::ProofGenerating => "SPEND_STATUS_PROOF_GENERATING",
             Self::ProofGenerated => "SPEND_STATUS_PROOF_GENERATED",
             Self::Pending => "SPEND_STATUS_PENDING",
@@ -1785,6 +1789,10 @@ impl<'de> serde::Deserialize<'de> for SpendStatus {
     {
         const FIELDS: &[&str] = &[
             "SPEND_STATUS_UNSPECIFIED",
+            "SPEND_STATUS_MERKLE_TREE_FETCHING",
+            "SPEND_STATUS_MERKLE_TREE_FETCHED",
+            "SPEND_STATUS_STATIC_ASSETS_FETCHING",
+            "SPEND_STATUS_STATIC_ASSETS_FETCHED",
             "SPEND_STATUS_PROOF_GENERATING",
             "SPEND_STATUS_PROOF_GENERATED",
             "SPEND_STATUS_PENDING",
@@ -1833,6 +1841,10 @@ impl<'de> serde::Deserialize<'de> for SpendStatus {
             {
                 match value {
                     "SPEND_STATUS_UNSPECIFIED" => Ok(SpendStatus::Unspecified),
+                    "SPEND_STATUS_MERKLE_TREE_FETCHING" => Ok(SpendStatus::MerkleTreeFetching),
+                    "SPEND_STATUS_MERKLE_TREE_FETCHED" => Ok(SpendStatus::MerkleTreeFetched),
+                    "SPEND_STATUS_STATIC_ASSETS_FETCHING" => Ok(SpendStatus::StaticAssetsFetching),
+                    "SPEND_STATUS_STATIC_ASSETS_FETCHED" => Ok(SpendStatus::StaticAssetsFetched),
                     "SPEND_STATUS_PROOF_GENERATING" => Ok(SpendStatus::ProofGenerating),
                     "SPEND_STATUS_PROOF_GENERATED" => Ok(SpendStatus::ProofGenerated),
                     "SPEND_STATUS_PENDING" => Ok(SpendStatus::Pending),

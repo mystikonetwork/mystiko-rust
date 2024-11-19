@@ -2,6 +2,7 @@ mod context;
 mod create;
 mod error;
 mod handler;
+mod merkle;
 mod proof;
 mod quote;
 mod send;
