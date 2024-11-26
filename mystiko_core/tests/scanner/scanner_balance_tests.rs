@@ -5,12 +5,13 @@ use mystiko_protos::core::scanner::v1::BalanceOptions;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigUint;
+use std::collections::HashMap;
 
 #[tokio::test]
 async fn test_pending_balance_default() {
     let account_count = 3_usize;
     let commitment_count = 20_usize;
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let option = BalanceOptions::builder().build();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
@@ -90,7 +91,7 @@ async fn test_pending_balance_default() {
 async fn test_options_with_spent() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let option = BalanceOptions::builder().with_spent(true).build();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
@@ -175,7 +176,7 @@ async fn test_options_with_asset() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().asset_symbols(vec!["MTT".to_string()]).build();
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
 
@@ -217,7 +218,7 @@ async fn test_options_with_chain_id() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().chain_ids(vec![12345_u64]).build();
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
 
@@ -255,7 +256,7 @@ async fn test_options_with_contract_address() {
     let option = BalanceOptions::builder()
         .contract_addresses(vec!["wrong_address".to_string()])
         .build();
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
 
@@ -291,7 +292,7 @@ async fn test_options_with_bridge_type() {
     let account_count = 3_usize;
     let commitment_count = 12_usize;
     let option = BalanceOptions::builder().bridge_types(vec![123456]).build();
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
 
@@ -329,7 +330,7 @@ async fn test_options_with_shielded_address() {
     let option = BalanceOptions::builder()
         .shielded_addresses(vec!["wrong address".to_string()])
         .build();
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let result = scanner.balance(option).await;
     assert!(matches!(result.err().unwrap(), ScannerError::NoSuchAccountError));
 
@@ -379,7 +380,7 @@ async fn test_options_with_shielded_address() {
 
     let account_count = 0_usize;
     let option = BalanceOptions::builder().build();
-    let (scanner, _, _) = create_scanner(account_count).await;
+    let (scanner, _, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let result = scanner.balance(option).await.unwrap();
     assert!(result.balances.is_empty());
 }

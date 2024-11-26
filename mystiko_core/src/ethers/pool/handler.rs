@@ -1,7 +1,7 @@
 use crate::{
-    AuditorPublicKeysOptions, CommitmentPoolContractHandler, FromContext, IsHistoricCommitmentOptions,
-    IsKnownRootOptions, IsSpentNullifierOptions, MinRollupFeeOptions, MystikoContext, MystikoError, TransactOptions,
-    TransactionSigner,
+    AuditorPublicKeysOptions, CommitmentPoolContractHandler, FromContext, IncludedCountOptions,
+    IsHistoricCommitmentOptions, IsKnownRootOptions, IsSpentNullifierOptions, MinRollupFeeOptions, MystikoContext,
+    MystikoError, TransactOptions, TransactionSigner,
 };
 use async_trait::async_trait;
 use ethers_core::types::transaction::eip2718::TypedTransaction;
@@ -134,6 +134,27 @@ where
             }
         } else {
             Ok(contract.get_min_rollup_fee().await?)
+        }
+    }
+
+    async fn get_commitment_included_count(&self, options: IncludedCountOptions) -> Result<U256, Self::Error> {
+        let provider = self
+            .providers
+            .get_provider(options.chain_id)
+            .await
+            .map_err(CommitmentPoolContractsError::ProviderPoolError)?;
+        let contract = CommitmentPool::new(options.contract_address, provider);
+        if let Some(timeout_ms) = options.timeout_ms {
+            match tokio::time::timeout(Duration::from_millis(timeout_ms), async {
+                contract.get_commitment_included_count().await
+            })
+            .await
+            {
+                Err(_) => Err(CommitmentPoolContractsError::AuditorPublicKeysTimeoutError(timeout_ms)),
+                Ok(result) => Ok(result?),
+            }
+        } else {
+            Ok(contract.get_commitment_included_count().await?)
         }
     }
 

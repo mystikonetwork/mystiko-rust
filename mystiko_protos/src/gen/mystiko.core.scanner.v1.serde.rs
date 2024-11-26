@@ -1,4 +1,470 @@
 // @generated
+impl serde::Serialize for AssetChainImportOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if !self.tx_hashes.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.AssetChainImportOptions", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if !self.tx_hashes.is_empty() {
+            struct_ser.serialize_field("txHashes", &self.tx_hashes)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AssetChainImportOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "tx_hashes",
+            "txHashes",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            TxHashes,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "txHashes" | "tx_hashes" => Ok(GeneratedField::TxHashes),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AssetChainImportOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.AssetChainImportOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetChainImportOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut tx_hashes__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::TxHashes => {
+                            if tx_hashes__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("txHashes"));
+                            }
+                            tx_hashes__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(AssetChainImportOptions {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    tx_hashes: tx_hashes__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.AssetChainImportOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for AssetChainImportResult {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.chain_id != 0 {
+            len += 1;
+        }
+        if self.imported_count != 0 {
+            len += 1;
+        }
+        if self.found_count != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.AssetChainImportResult", len)?;
+        if self.chain_id != 0 {
+            struct_ser.serialize_field("chainId", ToString::to_string(&self.chain_id).as_str())?;
+        }
+        if self.imported_count != 0 {
+            struct_ser.serialize_field("importedCount", &self.imported_count)?;
+        }
+        if self.found_count != 0 {
+            struct_ser.serialize_field("foundCount", &self.found_count)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AssetChainImportResult {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chain_id",
+            "chainId",
+            "imported_count",
+            "importedCount",
+            "found_count",
+            "foundCount",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            ChainId,
+            ImportedCount,
+            FoundCount,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chainId" | "chain_id" => Ok(GeneratedField::ChainId),
+                            "importedCount" | "imported_count" => Ok(GeneratedField::ImportedCount),
+                            "foundCount" | "found_count" => Ok(GeneratedField::FoundCount),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AssetChainImportResult;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.AssetChainImportResult")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetChainImportResult, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chain_id__ = None;
+                let mut imported_count__ = None;
+                let mut found_count__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::ChainId => {
+                            if chain_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chainId"));
+                            }
+                            chain_id__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::ImportedCount => {
+                            if imported_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("importedCount"));
+                            }
+                            imported_count__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::FoundCount => {
+                            if found_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("foundCount"));
+                            }
+                            found_count__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(AssetChainImportResult {
+                    chain_id: chain_id__.unwrap_or_default(),
+                    imported_count: imported_count__.unwrap_or_default(),
+                    found_count: found_count__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.AssetChainImportResult", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for AssetImportOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.wallet_password.is_empty() {
+            len += 1;
+        }
+        if !self.chains.is_empty() {
+            len += 1;
+        }
+        if self.query_timeout_ms.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.AssetImportOptions", len)?;
+        if !self.wallet_password.is_empty() {
+            struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
+        }
+        if !self.chains.is_empty() {
+            struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AssetImportOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "wallet_password",
+            "walletPassword",
+            "chains",
+            "query_timeout_ms",
+            "queryTimeoutMs",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            WalletPassword,
+            Chains,
+            QueryTimeoutMs,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
+                            "chains" => Ok(GeneratedField::Chains),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AssetImportOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.AssetImportOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetImportOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut wallet_password__ = None;
+                let mut chains__ = None;
+                let mut query_timeout_ms__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::WalletPassword => {
+                            if wallet_password__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("walletPassword"));
+                            }
+                            wallet_password__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::Chains => {
+                            if chains__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chains"));
+                            }
+                            chains__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
+                            }
+                            query_timeout_ms__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(AssetImportOptions {
+                    wallet_password: wallet_password__.unwrap_or_default(),
+                    chains: chains__.unwrap_or_default(),
+                    query_timeout_ms: query_timeout_ms__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.AssetImportOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for AssetImportResult {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.chains.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.AssetImportResult", len)?;
+        if !self.chains.is_empty() {
+            struct_ser.serialize_field("chains", &self.chains)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for AssetImportResult {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "chains",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Chains,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "chains" => Ok(GeneratedField::Chains),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = AssetImportResult;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.AssetImportResult")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetImportResult, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut chains__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Chains => {
+                            if chains__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("chains"));
+                            }
+                            chains__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(AssetImportResult {
+                    chains: chains__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.AssetImportResult", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for AssetsByBridge {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>

@@ -2,14 +2,23 @@ mod scanner_assets_tests;
 mod scanner_balance_tests;
 mod scanner_reset_tests;
 mod scanner_scan_bridge_tests;
+mod scanner_scan_import_tests;
 mod scanner_scan_tests;
 
-use crate::common::create_database;
+use crate::common::{create_database, MockProvider, MockProviders};
+use anyhow::Result;
+use async_trait::async_trait;
+use ethers_core::types::transaction::eip2718::TypedTransaction;
+use ethers_core::types::{Address, Bytes, Log, TransactionReceipt, TxHash, H256, U256, U64};
+use mockall::mock;
 use mystiko_config::MystikoConfig;
 use mystiko_core::{
-    AccountCollection, AccountHandler, Accounts, Commitment, CommitmentCollection, Database, NullifierCollection,
-    Scanner, ScannerOptions, WalletCollection, WalletHandler, Wallets,
+    AccountCollection, AccountHandler, Accounts, AuditorPublicKeysOptions, Commitment, CommitmentCollection,
+    CommitmentPoolContractHandler, Database, IncludedCountOptions, IsHistoricCommitmentOptions, IsKnownRootOptions,
+    IsSpentNullifierOptions, MinRollupFeeOptions, NullifierCollection, Scanner, ScannerOptions, TransactOptions,
+    TransactionSigner, WalletCollection, WalletHandler, Wallets,
 };
+use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::Commitment as ProtocolCommitment;
 use mystiko_protocol::commitment::Note;
@@ -23,6 +32,7 @@ use mystiko_storage::{Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
 use num_bigint::BigUint;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::string::ToString;
 use std::sync::Arc;
@@ -30,16 +40,39 @@ use typed_builder::TypedBuilder;
 
 pub(crate) const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
 
+mock! {
+    #[derive(Debug, Default)]
+    CommitmentPoolContracts {}
+
+    #[async_trait]
+    impl CommitmentPoolContractHandler for CommitmentPoolContracts {
+        type Error = anyhow::Error;
+        async fn is_historic_commitment(&self, options: IsHistoricCommitmentOptions) -> Result<bool>;
+        async fn is_spent_nullifier(&self, options: IsSpentNullifierOptions) -> Result<bool>;
+        async fn is_known_root(&self, options: IsKnownRootOptions) -> Result<bool>;
+        async fn min_rollup_fee(&self, options: MinRollupFeeOptions) -> Result<U256>;
+        async fn get_commitment_included_count(&self, options: IncludedCountOptions) -> Result<U256>;
+        async fn auditor_public_keys(&self, options: AuditorPublicKeysOptions) -> Result<Vec<U256>>;
+        async fn transact<T, S>(&self, options: TransactOptions<T, S>) -> Result<TxHash>
+        where
+            T: Into<TypedTransaction> + Clone + Default + Send + Sync + 'static,
+            S: TransactionSigner + 'static;
+    }
+}
+
 #[derive(Debug, TypedBuilder)]
 pub struct TestAccount {
     shielded_address: ShieldedAddress,
     v_sk: VerifySk,
 }
 
-pub async fn create_scanner(
+async fn create_scanner(
     account_count: usize,
+    mnemonic_phrase: Option<String>,
+    provider: HashMap<u64, MockProvider>,
+    commitment_pool_contracts: Option<MockCommitmentPoolContracts>,
 ) -> (
-    Scanner<SqlStatementFormatter, SqliteStorage>,
+    Scanner<SqlStatementFormatter, SqliteStorage, MockCommitmentPoolContracts, MockProviders>,
     Arc<Database<SqlStatementFormatter, SqliteStorage>>,
     Vec<TestAccount>,
 ) {
@@ -59,6 +92,7 @@ pub async fn create_scanner(
     let wallet = Wallets::new(db.clone());
     let options = CreateWalletOptions::builder()
         .password(String::from(DEFAULT_WALLET_PASSWORD))
+        .mnemonic_phrase(mnemonic_phrase)
         .build();
     let _ = wallet.create(&options).await.unwrap();
 
@@ -91,7 +125,26 @@ pub async fn create_scanner(
     commitment.migrate().await.unwrap();
     let nullifier = NullifierCollection::new(db.collection());
     nullifier.migrate().await.unwrap();
-    let options = ScannerOptions::builder().db(db.clone()).build();
+    let raw_providers = provider
+        .into_iter()
+        .map(|(chain_id, provider)| {
+            let wrapped_provider = Arc::new(Provider::new(ProviderWrapper::new(Box::new(provider))));
+            (chain_id, wrapped_provider.clone())
+        })
+        .collect::<HashMap<_, _>>();
+    let mut providers = MockProviders::new();
+    providers.expect_get_provider().returning(move |chain_id| {
+        raw_providers
+            .get(&chain_id)
+            .cloned()
+            .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
+    });
+    let pool_contracts = commitment_pool_contracts.unwrap_or_default();
+    let options = ScannerOptions::builder()
+        .db(db.clone())
+        .providers(providers)
+        .commitment_pool_contracts(pool_contracts)
+        .build();
     (Scanner::new(config, options), db, test_accounts)
 }
 
@@ -154,4 +207,60 @@ fn default_commitment() -> Commitment {
         included_transaction_hash: Some(String::from("")),
         src_chain_transaction_hash: Some(String::from("")),
     }
+}
+
+fn build_mock_provider(log_count: u32) -> MockProvider {
+    let mut mock_provider = MockProvider::new();
+    mock_provider.expect_request().returning(move |method, _| match method {
+        "eth_getTransactionReceipt" => {
+            let logs = vec![
+                Log {
+                    address: Address::from_str("0x00b73dbC8C370CA7e5F00b778280596383b62929").unwrap(),
+                    block_hash: Some(H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap()),
+                    block_number: Some(U64::from(10000000)),
+                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d1d254df768aad077345bcca57768ba1df0424264ca8f76a2fab3549b051e5d0339f73f26c5d4f2e0e1e2575829a0a7afeb0a380f67b100b866b0bfbc84713de7b92d622a98cdbec15690d203cc33b428591d8f549ff7e48e44475f14c3d04b4c9c1c16c3c8beac96ae05db6762e01466d49e04422b9d84a7335b798bb7fbccb2b2fe7732bd991c9a29c861b6c48a692da6e02af21b6a0410aedbdf5f4a3094729873d58f42cc59ac41c54a2b7b2b392277ed72a1b7121efc24d039d7830e20e1f3cb60de6e96e33ed7f344962635832c173000000000000000000000000000000").unwrap(),
+                    log_index: Some(U256::from(250)),
+                    transaction_log_index: None,
+                    log_type: None,
+                    removed: Some(false),
+                    topics: vec![
+                        H256::from_str("0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9").unwrap(),
+                        H256::from_str("0x1db84c1b0bd7877f4cddd3f5b0a8ae202b017234f84dc75face85b7556951fc4").unwrap(),
+                    ],
+                    transaction_hash: Some(H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap()),
+                    transaction_index: Some(U64::from(51)),
+                },
+                Log {
+                    address: Address::from_str("0x00b73dbC8C370CA7e5F00b778280596383b62929").unwrap(),
+                    block_hash: Some(H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap()),
+                    block_number: Some(U64::from(10000000)),
+                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000b000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d161e3ffa2a53509de01250f2b8af2e0d50433e50f647361b877918a55745d075c9bbf7aa8a1f41bd3641a606a0cbcd00d459fcf231acafdec6eca9b7aacfd5f67e1b63529a0564e82cdde6754d6b946f5bae36f748e3295276df68b8b19d1d8bccd8105d7feca23c5f6288a78f9f038c5d3594d2ef903fc145b07b203f98796c58a9210a5f7c37e07215f9b1ac273c51688c6b72dad855e7008d81f69c28762b289caf7d93d44b6416f7fce60b53669624a9ec0d3289f2a8ee8b8811661fc73d9ece7376574c15baa8a8b21083aa49f8d54000000000000000000000000000000").unwrap(),
+                    log_index: Some(U256::from(251)),
+                    transaction_log_index: None,
+                    log_type: None,
+                    removed: Some(false),
+                    topics: vec![
+                        H256::from_str("0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9").unwrap(),
+                        H256::from_str("0x18812c5d6d451a1c7396e04aaaed04ddbbe8a3908d3db55a890a9527ba4ea8c3").unwrap(),
+                    ],
+                    transaction_hash: Some(H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap()),
+                    transaction_index: Some(U64::from(51)),
+                }
+            ];
+            let receipt = TransactionReceipt {
+                transaction_hash: H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78")
+                    .unwrap(),
+                block_number: Some(U64::from(10000000)),
+                logs: logs.split_at(log_count as usize).0.to_vec(),
+                ..Default::default()
+            };
+            let receipt = serde_json::json!(receipt);
+            Ok(receipt)
+        }
+        _ => Err(ethers_providers::ProviderError::CustomError(
+            "mock provider not support".to_string(),
+        )),
+    });
+
+    mock_provider
 }

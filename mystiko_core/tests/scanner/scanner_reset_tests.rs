@@ -1,11 +1,12 @@
 use crate::scanner::create_scanner;
 use mystiko_core::{ScannerError, ScannerHandler};
 use mystiko_protos::core::scanner::v1::ScannerResetOptions;
+use std::collections::HashMap;
 
 #[tokio::test]
 async fn test_scan_reset_default_option() {
     let account_count = 3_usize;
-    let (scanner, db, test_accounts) = create_scanner(account_count).await;
+    let (scanner, db, test_accounts) = create_scanner(account_count, None, HashMap::new(), None).await;
 
     let mut accounts = db.accounts.find_all().await.unwrap();
     accounts.iter_mut().for_each(|a| {
@@ -36,7 +37,7 @@ async fn test_scan_reset_default_option() {
     assert!(result.is_ok());
 
     let account_count = 0_usize;
-    let (scanner, _, _) = create_scanner(account_count).await;
+    let (scanner, _, _) = create_scanner(account_count, None, HashMap::new(), None).await;
     let option = ScannerResetOptions::builder().shielded_addresses(vec![]).build();
     let result = scanner.reset(option).await;
     assert!(result.is_ok());
@@ -45,7 +46,7 @@ async fn test_scan_reset_default_option() {
 #[tokio::test]
 async fn test_scan_reset_to_id() {
     let account_count = 3_usize;
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
 
     let mut accounts = db.accounts.find_all().await.unwrap();
     accounts.iter_mut().for_each(|a| {
@@ -65,7 +66,7 @@ async fn test_scan_reset_to_id() {
 #[tokio::test]
 async fn test_scan_reset_some_account() {
     let account_count = 3_usize;
-    let (scanner, db, _) = create_scanner(account_count).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
 
     let mut accounts = db.accounts.find_all().await.unwrap();
     accounts.iter_mut().for_each(|a| {

@@ -12,9 +12,9 @@ use mockall::mock;
 use mystiko_core::{
     AuditorPublicKeysOptions, BalanceOptions, CommitmentPoolContractHandler, CrossChainDepositOptions,
     DepositContractHandler, DepositOptions, DepositQuote, DepositQuoteOptions, Erc20AllowanceOptions,
-    Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, IsHistoricCommitmentOptions, IsKnownRootOptions,
-    IsSpentNullifierOptions, MinRollupFeeOptions, PublicAssetHandler, TransactOptions, TransactionHandler,
-    TransactionSigner, TransferOptions, WaitOptions,
+    Erc20ApproveOptions, Erc20BalanceOptions, Erc20TransferOptions, IncludedCountOptions, IsHistoricCommitmentOptions,
+    IsKnownRootOptions, IsSpentNullifierOptions, MinRollupFeeOptions, PublicAssetHandler, TransactOptions,
+    TransactionHandler, TransactionSigner, TransferOptions, WaitOptions,
 };
 use mystiko_crypto::zkp::{G16Proof, ZKProveOptions, ZKVerifyOptions};
 use mystiko_datapacker_client::{ChainQuery, ChainResponse};
@@ -89,6 +89,7 @@ mock! {
         async fn is_spent_nullifier(&self, options: IsSpentNullifierOptions) -> Result<bool>;
         async fn is_known_root(&self, options: IsKnownRootOptions) -> Result<bool>;
         async fn min_rollup_fee(&self, options: MinRollupFeeOptions) -> Result<U256>;
+        async fn get_commitment_included_count(&self, options: IncludedCountOptions) -> Result<U256>;
         async fn auditor_public_keys(&self, options: AuditorPublicKeysOptions) -> Result<Vec<U256>>;
         async fn transact<T, S>(&self, options: TransactOptions<T, S>) -> Result<TxHash>
         where

@@ -156,5 +156,7 @@ pub fn parse_scanner_error(err: &ScannerError) -> StatusCode {
         ScannerError::FromHexError(_) => ProtoScannerError::FromHexError.into(),
         ScannerError::AnyhowError(_) => ProtoScannerError::AnyhowError.into(),
         ScannerError::ProtocolKeyError(_) => ProtoScannerError::ProtocolKeyError.into(),
+        ScannerError::ProviderError(_) => ProtoScannerError::ProviderError.into(),
+        ScannerError::CommitmentPoolContractsError(_) => ProtoScannerError::CommitmentPoolContractsError.into(),
     }
 }

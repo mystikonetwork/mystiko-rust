@@ -1,4 +1,4 @@
-use crate::{AccountsError, WalletsError};
+use crate::{AccountsError, CommitmentPoolContractsError, WalletsError};
 use mystiko_crypto::error::CryptoError;
 use mystiko_protocol::error::{ProtocolError, ProtocolKeyError};
 use mystiko_storage::StorageError;
@@ -32,4 +32,8 @@ pub enum ScannerError {
     FromHexError(#[from] FromHexError),
     #[error(transparent)]
     AnyhowError(#[from] anyhow::Error),
+    #[error(transparent)]
+    ProviderError(#[from] ethers_providers::ProviderError),
+    #[error(transparent)]
+    CommitmentPoolContractsError(#[from] CommitmentPoolContractsError),
 }
