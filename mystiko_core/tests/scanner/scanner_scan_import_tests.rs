@@ -54,8 +54,6 @@ async fn test_import_one_queued_commitment() {
     assert_eq!(cm[0].data.status, CommitmentStatus::Queued as i32);
     assert_eq!(cm[0].data.leaf_index, Some(10));
     assert!(!cm[0].data.spent);
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 0);
 }
 
 #[tokio::test]
@@ -106,8 +104,6 @@ async fn test_import_two_queued_commitment() {
     assert_eq!(cm[1].data.status, CommitmentStatus::Queued as i32);
     assert_eq!(cm[1].data.leaf_index, Some(11));
     assert!(!cm[1].data.spent);
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 0);
 }
 
 #[tokio::test]
@@ -205,8 +201,6 @@ async fn test_import_two_included_commitment() {
     assert_eq!(cm[1].data.status, CommitmentStatus::Included as i32);
     assert_eq!(cm[1].data.leaf_index, Some(11));
     assert!(!cm[1].data.spent);
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 0);
 }
 
 #[tokio::test]
@@ -251,8 +245,6 @@ async fn test_import_spent_commitment() {
     assert_eq!(cm.len(), 1);
     assert_eq!(cm[0].data.status, CommitmentStatus::Included as i32);
     assert!(cm[0].data.spent);
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 1);
 }
 
 #[tokio::test]
@@ -295,8 +287,6 @@ async fn test_import_others_commitment() {
     );
     let cm = db.commitments.find_all().await.unwrap();
     assert_eq!(cm.len(), 0);
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 0);
 }
 
 #[tokio::test]
@@ -379,6 +369,71 @@ async fn test_import_merge_spend_commitment() {
         cm[0].data.shielded_address,
         Some(accounts[0].shielded_address.address())
     );
-    let nullifiers = db.nullifiers.find_all().await.unwrap();
-    assert_eq!(nullifiers.len(), 1);
+}
+
+#[tokio::test]
+async fn test_import_two_chain_commitment() {
+    let chain_id_1 = 5_u64;
+    let chain_id_2 = 97_u64;
+    let account_count = 1_usize;
+    let mut mock_commitment_pool = MockCommitmentPoolContracts::default();
+    mock_commitment_pool
+        .expect_get_commitment_included_count()
+        .returning(|_| Ok(U256::from(200000)));
+    mock_commitment_pool
+        .expect_is_spent_nullifier()
+        .returning(|_| Ok(false));
+    let provider1 = build_mock_provider(2);
+    let provider2 = build_mock_provider(2);
+    let (scanner, db, _) = create_scanner(
+        account_count,
+        Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
+        HashMap::from([(chain_id_1, provider1),(chain_id_2,provider2)]),
+        Some(mock_commitment_pool),
+    )
+        .await;
+
+    let options = AssetImportOptions::builder()
+        .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
+        .chains([
+            AssetChainImportOptions::builder()
+                .chain_id(chain_id_1)
+                .tx_hashes(vec![
+                    "0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2".to_string(),
+                ])
+                .build(),
+            AssetChainImportOptions::builder()
+                .chain_id(chain_id_2)
+                .tx_hashes(vec![
+                    "0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2".to_string(),
+                ])
+                .build(),
+        ])
+        .build();
+    let r = scanner.import(options).await.unwrap();
+    assert_eq!(
+        r,
+        AssetImportResult::builder()
+            .chains([
+                AssetChainImportResult::builder()
+                    .chain_id(chain_id_1)
+                    .found_count(2_u32)
+                    .imported_count(2_u32)
+                    .build(),
+                AssetChainImportResult::builder()
+                    .chain_id(chain_id_2)
+                    .found_count(0_u32)
+                    .imported_count(0_u32)
+                    .build()
+            ])
+            .build()
+    );
+    let cm = db.commitments.find_all().await.unwrap();
+    assert_eq!(cm.len(), 2);
+    assert_eq!(cm[0].data.status, CommitmentStatus::Included as i32);
+    assert!(!cm[0].data.spent);
+    assert_eq!(cm[0].data.leaf_index, Some(10));
+    assert_eq!(cm[1].data.status, CommitmentStatus::Included as i32);
+    assert_eq!(cm[1].data.leaf_index, Some(11));
+    assert!(!cm[1].data.spent);
 }

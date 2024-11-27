@@ -1,7 +1,7 @@
 use crate::scanner::{scan_commitment_by_accounts, ScanningAccount};
 use crate::{
     Commitment, CommitmentColumn, CommitmentPoolContractHandler, IncludedCountOptions, IsSpentNullifierOptions,
-    Nullifier, NullifierColumn, Scanner, ScannerError, WalletHandler,
+    Scanner, ScannerError, WalletHandler,
 };
 use ethers_contract::EthEvent;
 use ethers_core::types::{Log, TxHash, U64};
@@ -211,22 +211,16 @@ where
                 if spend {
                     commitment.status = CommitmentStatus::Included as i32;
                     commitment.spent = true;
-                    let nullifier = Nullifier {
-                        chain_id,
-                        contract_address: contract_address_str,
-                        nullifier: nullifier.clone(),
-                        block_number,
-                        transaction_hash: "".to_string(),
-                    };
-                    self.insert_nullifier_to_db(nullifier).await?;
                 }
             }
-            return self.update_or_insert_commitment(commitment).await;
+            self.update_or_insert_commitment(commitment).await?;
+            Ok((1, 1))
+        } else {
+            Ok((1, 0))
         }
-        Ok((1, 0))
     }
 
-    async fn update_or_insert_commitment(&self, commitment: Commitment) -> Result<(u32, u32), ScannerError> {
+    async fn update_or_insert_commitment(&self, commitment: Commitment) -> Result<(), ScannerError> {
         let conditions = Condition::and(vec![
             SubFilter::equal(CommitmentColumn::ChainId, commitment.chain_id),
             SubFilter::equal(CommitmentColumn::ContractAddress, commitment.contract_address.clone()),
@@ -243,18 +237,6 @@ where
             self.db.commitments.update(&update_commitment).await?;
         } else {
             self.db.commitments.insert(&commitment).await?;
-        }
-        Ok((1, 1))
-    }
-
-    async fn insert_nullifier_to_db(&self, nullifier: Nullifier) -> Result<(), ScannerError> {
-        let conditions = Condition::and(vec![
-            SubFilter::equal(NullifierColumn::ChainId, nullifier.chain_id),
-            SubFilter::equal(NullifierColumn::ContractAddress, nullifier.contract_address.clone()),
-            SubFilter::equal(NullifierColumn::Nullifier, nullifier.nullifier.clone()),
-        ]);
-        if self.db.nullifiers.find_one(conditions).await?.is_none() {
-            self.db.nullifiers.insert(&nullifier).await?;
         }
         Ok(())
     }
