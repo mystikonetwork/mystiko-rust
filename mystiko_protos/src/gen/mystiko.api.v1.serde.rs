@@ -573,6 +573,8 @@ impl serde::Serialize for ScannerError {
             Self::GetMystikoGuardError => "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR",
             Self::DeserializeMessageError => "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR",
             Self::ProtocolKeyError => "SCANNER_ERROR_PROTOCOL_KEY_ERROR",
+            Self::ProviderError => "SCANNER_ERROR_PROVIDER_ERROR",
+            Self::CommitmentPoolContractsError => "SCANNER_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR",
         };
         serializer.serialize_str(variant)
     }
@@ -599,6 +601,8 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
             "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR",
             "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR",
             "SCANNER_ERROR_PROTOCOL_KEY_ERROR",
+            "SCANNER_ERROR_PROVIDER_ERROR",
+            "SCANNER_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR",
         ];
 
         struct GeneratedVisitor;
@@ -656,6 +660,8 @@ impl<'de> serde::Deserialize<'de> for ScannerError {
                     "SCANNER_ERROR_GET_MYSTIKO_GUARD_ERROR" => Ok(ScannerError::GetMystikoGuardError),
                     "SCANNER_ERROR_DESERIALIZE_MESSAGE_ERROR" => Ok(ScannerError::DeserializeMessageError),
                     "SCANNER_ERROR_PROTOCOL_KEY_ERROR" => Ok(ScannerError::ProtocolKeyError),
+                    "SCANNER_ERROR_PROVIDER_ERROR" => Ok(ScannerError::ProviderError),
+                    "SCANNER_ERROR_COMMITMENT_POOL_CONTRACTS_ERROR" => Ok(ScannerError::CommitmentPoolContractsError),
                     _ => Err(serde::de::Error::unknown_variant(value, FIELDS)),
                 }
             }

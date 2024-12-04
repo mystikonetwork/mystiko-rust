@@ -51,6 +51,15 @@ pub struct MinRollupFeeOptions {
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
+pub struct IncludedCountOptions {
+    pub chain_id: u64,
+    pub contract_address: Address,
+    #[builder(default)]
+    pub timeout_ms: Option<u64>,
+}
+
+#[derive(Debug, Clone, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
 pub struct AuditorPublicKeysOptions {
     pub chain_id: u64,
     pub contract_address: Address,
@@ -86,6 +95,8 @@ pub trait CommitmentPoolContractHandler: Send + Sync {
     async fn is_known_root(&self, options: IsKnownRootOptions) -> Result<bool, Self::Error>;
 
     async fn min_rollup_fee(&self, options: MinRollupFeeOptions) -> Result<U256, Self::Error>;
+
+    async fn get_commitment_included_count(&self, options: IncludedCountOptions) -> Result<U256, Self::Error>;
 
     async fn auditor_public_keys(&self, options: AuditorPublicKeysOptions) -> Result<Vec<U256>, Self::Error>;
 

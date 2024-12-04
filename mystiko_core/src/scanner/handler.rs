@@ -1,11 +1,13 @@
 use crate::{
-    Account, Accounts, Commitment, CommitmentColumn, Database, FromContext, MystikoContext, MystikoError, Nullifier,
-    NullifierColumn, ScannerError, ScannerHandler, WalletHandler, Wallets,
+    Account, Accounts, Commitment, CommitmentColumn, CommitmentPoolContractHandler, CommitmentPoolContracts, Database,
+    FromContext, MystikoContext, MystikoError, Nullifier, NullifierColumn, ScannerError, ScannerHandler, WalletHandler,
+    Wallets,
 };
 use async_trait::async_trait;
 use itertools::Itertools;
 use mystiko_config::MystikoConfig;
 use mystiko_crypto::crypto::decrypt_symmetric;
+use mystiko_ethers::Providers;
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protocol::commitment::{Commitment as ProtocolCommitment, EncryptedData, EncryptedNote};
 use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
@@ -13,8 +15,8 @@ use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
-    AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion, AssetsOptions, Balance, BalanceOptions,
-    BalanceResult, ResetResult, ScanOptions, ScanResult, ScannerResetOptions,
+    AssetImportOptions, AssetImportResult, AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion,
+    AssetsOptions, Balance, BalanceOptions, BalanceResult, ResetResult, ScanOptions, ScanResult, ScannerResetOptions,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::{Condition, ConditionOperator, Order, OrderBy, QueryFilter, SubFilter};
@@ -31,50 +33,71 @@ const DEFAULT_MAX_QUERY_FILTER_SIZE: u64 = 1000;
 
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct Scanner<F: StatementFormatter, S: Storage> {
-    config: Arc<MystikoConfig>,
-    db: Arc<Database<F, S>>,
-    wallets: Wallets<F, S>,
-    accounts: Accounts<F, S>,
+pub struct Scanner<
+    F: StatementFormatter,
+    S: Storage,
+    C = CommitmentPoolContracts<Box<dyn Providers>>,
+    P = Box<dyn Providers>,
+> {
+    pub(crate) config: Arc<MystikoConfig>,
+    pub(crate) db: Arc<Database<F, S>>,
+    pub(crate) wallets: Wallets<F, S>,
+    pub(crate) accounts: Accounts<F, S>,
+    pub(crate) commitment_pool_contracts: Arc<C>,
+    pub(crate) providers: Arc<P>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
-pub struct ScannerOptions<F: StatementFormatter, S: Storage> {
+pub struct ScannerOptions<
+    F: StatementFormatter,
+    S: Storage,
+    C = CommitmentPoolContracts<Box<dyn Providers>>,
+    P = Box<dyn Providers>,
+> {
     db: Arc<Database<F, S>>,
+    commitment_pool_contracts: Arc<C>,
+    providers: Arc<P>,
 }
 
 #[async_trait]
-impl<F, S> FromContext<F, S> for Scanner<F, S>
+impl<F, S, C> FromContext<F, S> for Scanner<F, S, C>
 where
     F: StatementFormatter,
     S: Storage,
+    C: CommitmentPoolContractHandler + FromContext<F, S>,
+    ScannerError: From<C::Error>,
 {
     async fn from_context(context: &MystikoContext<F, S>) -> Result<Self, MystikoError> {
-        Ok(Scanner::<F, S>::builder()
-            .config(context.config.clone())
-            .wallets(Wallets::<F, S>::new(context.db.clone()))
-            .accounts(Accounts::<F, S>::new(context.db.clone()))
+        let options = ScannerOptions::<F, S, C>::builder()
             .db(context.db.clone())
-            .build())
+            .commitment_pool_contracts(C::from_context(context).await?)
+            .providers(context.providers.clone())
+            .build();
+        Ok(Scanner::new(context.config.clone(), options))
     }
 }
 
 #[async_trait]
-impl<F, S>
+impl<F, S, C, P>
     ScannerHandler<
         ScanOptions,
         ScanResult,
         ScannerResetOptions,
         ResetResult,
+        AssetImportOptions,
+        AssetImportResult,
         BalanceOptions,
         BalanceResult,
         AssetsOptions,
         AssetsByChain,
-    > for Scanner<F, S>
+    > for Scanner<F, S, C, P>
 where
     F: StatementFormatter,
     S: Storage,
+    C: CommitmentPoolContractHandler,
+    P: Providers + 'static,
+    ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
 
@@ -145,6 +168,10 @@ where
         Ok(ResetResult::default())
     }
 
+    async fn import(&self, options: AssetImportOptions) -> Result<AssetImportResult, Self::Error> {
+        self.asset_import(options).await
+    }
+
     async fn balance(&self, options: BalanceOptions) -> Result<BalanceResult, Self::Error> {
         let filter = self.build_balance_filter(&options).await?;
         let commitments = self.db.commitments.find(filter).await?;
@@ -168,7 +195,7 @@ where
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
-struct ScanningAccount {
+pub(crate) struct ScanningAccount {
     shielded_address: ShieldedAddress,
     sk_enc: EncSk,
     sk_verify: VerifySk,
@@ -247,17 +274,22 @@ struct CommitmentWithPeerContract {
     commitment_hash: BigUint,
 }
 
-impl<F, S> Scanner<F, S>
+impl<F, S, C, P> Scanner<F, S, C, P>
 where
     F: StatementFormatter,
     S: Storage,
+    C: CommitmentPoolContractHandler,
+    P: Providers + 'static,
+    ScannerError: From<C::Error>,
 {
-    pub fn new(config: Arc<MystikoConfig>, options: ScannerOptions<F, S>) -> Self {
-        Scanner::<F, S>::builder()
+    pub fn new(config: Arc<MystikoConfig>, options: ScannerOptions<F, S, C, P>) -> Self {
+        Scanner::builder()
             .config(config)
             .wallets(Wallets::<F, S>::new(options.db.clone()))
             .accounts(Accounts::<F, S>::new(options.db.clone()))
             .db(options.db)
+            .commitment_pool_contracts(options.commitment_pool_contracts)
+            .providers(options.providers)
             .build()
     }
 
@@ -325,7 +357,7 @@ where
         Ok(())
     }
 
-    async fn build_filter_accounts(
+    pub(crate) async fn build_filter_accounts(
         &self,
         shielded_addresses: &[String],
     ) -> Result<Vec<Document<Account>>, ScannerError> {
@@ -344,7 +376,7 @@ where
         Ok(accounts)
     }
 
-    async fn build_scan_accounts(
+    pub(crate) async fn build_scan_accounts(
         &self,
         accounts: &[Document<Account>],
         password: &str,
@@ -384,7 +416,7 @@ where
         Ok(results.into_iter().flatten().collect())
     }
 
-    async fn update_batch_commitments_spent_status(
+    pub(crate) async fn update_batch_commitments_spent_status(
         &self,
         mut commitments: Vec<Document<Commitment>>,
     ) -> Result<Vec<Document<Commitment>>, ScannerError> {
@@ -702,7 +734,7 @@ fn scan_commitments(
     let scanned_count = commitments.len() as u64;
     let updated_commitments = commitments
         .into_iter()
-        .filter_map(|commitment| scan_commitment_by_accounts(commitment, &accounts).transpose())
+        .filter_map(|commitment| scan_document_commitment_by_accounts(commitment, &accounts).transpose())
         .collect::<Result<Vec<_>, _>>()?;
     Ok(ScanBatchResult::builder()
         .scanned_count(scanned_count)
@@ -710,11 +742,26 @@ fn scan_commitments(
         .build())
 }
 
-fn scan_commitment_by_accounts(
-    mut commitment: Document<Commitment>,
+fn scan_document_commitment_by_accounts(
+    commitment: Document<Commitment>,
     accounts: &[ScanningAccount],
 ) -> Result<Option<Document<Commitment>>, ScannerError> {
-    if let Some(encrypted_note) = &commitment.data.encrypted_note {
+    match scan_commitment_by_accounts(commitment.data, accounts)? {
+        Some(scan_commitment) => Ok(Some(Document::new(
+            commitment.id,
+            commitment.created_at,
+            commitment.updated_at,
+            scan_commitment,
+        ))),
+        None => Ok(None),
+    }
+}
+
+pub(crate) fn scan_commitment_by_accounts(
+    commitment: Commitment,
+    accounts: &[ScanningAccount],
+) -> Result<Option<Commitment>, ScannerError> {
+    if let Some(encrypted_note) = &commitment.encrypted_note {
         let encrypted_note_bytes: EncryptedNote = decode_hex(encrypted_note)?;
         for account in accounts {
             if let Ok(pcm) = ProtocolCommitment::new(
@@ -725,11 +772,12 @@ fn scan_commitment_by_accounts(
                     encrypted_note: encrypted_note_bytes.clone(),
                 }),
             ) {
-                if pcm.commitment_hash == commitment.data.commitment_hash {
+                if pcm.commitment_hash == commitment.commitment_hash {
                     let nullifier = compute_nullifier(&account.sk_verify, &pcm.note.random_p)?;
-                    commitment.data.amount = Some(pcm.note.amount);
-                    commitment.data.nullifier = Some(nullifier);
-                    commitment.data.shielded_address = Some(account.shielded_address.address());
+                    let mut commitment = commitment;
+                    commitment.amount = Some(pcm.note.amount);
+                    commitment.nullifier = Some(nullifier);
+                    commitment.shielded_address = Some(account.shielded_address.address());
                     return Ok(Some(commitment));
                 }
             }
