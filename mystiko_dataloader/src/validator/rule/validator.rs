@@ -79,7 +79,7 @@ where
 
         if !validate_data.is_empty() {
             let validate_concurrency = std::cmp::max(1, option.validate_concurrency);
-            let chunk_nums = (validate_data.len() + validate_concurrency - 1) / validate_concurrency;
+            let chunk_nums = validate_data.len().div_ceil(validate_concurrency);
             let chunks = validate_data.chunks(chunk_nums);
             let mut group_task = Vec::with_capacity(chunks.len());
             for chunk in chunks {
