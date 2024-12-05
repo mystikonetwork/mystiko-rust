@@ -1,6 +1,6 @@
 use crate::runtime;
 use mystiko_protos::api::scanner::v1::{
-    AssetsRequest, BalanceRequest, ChainAssetsRequest, ScanRequest, ScannerResetRequest,
+    AssetImportRequest, AssetsRequest, BalanceRequest, ChainAssetsRequest, ScanRequest, ScannerResetRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, ScannerError};
 
@@ -29,6 +29,22 @@ where
         Ok(message) => {
             if let Some(options) = message.options {
                 return runtime().block_on(internal::reset(options));
+            }
+            ApiResponse::unknown_error("unexpected message")
+        }
+        Err(err) => ApiResponse::error(ScannerError::DeserializeMessageError, err),
+    }
+}
+
+pub fn import<M>(message: M) -> ApiResponse
+where
+    M: TryInto<AssetImportRequest>,
+    <M as TryInto<AssetImportRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    match message.try_into() {
+        Ok(message) => {
+            if let Some(options) = message.options {
+                return runtime().block_on(internal::import(options));
             }
             ApiResponse::unknown_error("unexpected message")
         }
@@ -89,10 +105,12 @@ mod internal {
     use crate::instance;
     use mystiko_core::ScannerHandler;
     use mystiko_protos::api::scanner::v1::{
-        AssetsResponse, BalanceResponse, ChainAssetsResponse, ResetResponse, ScanResponse,
+        AssetImportResponse, AssetsResponse, BalanceResponse, ChainAssetsResponse, ResetResponse, ScanResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, ScannerError};
-    use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions};
+    use mystiko_protos::core::scanner::v1::{
+        AssetImportOptions, AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions,
+    };
 
     pub(crate) async fn scan(options: ScanOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -115,6 +133,20 @@ mod internal {
                 let result = mystiko.scanner.reset(options).await;
                 match result {
                     Ok(reset) => ApiResponse::success(ResetResponse::builder().result(reset).build()),
+                    Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
+                }
+            }
+            Err(err) => ApiResponse::error(ScannerError::GetMystikoGuardError, err),
+        }
+    }
+
+    pub(crate) async fn import(options: AssetImportOptions) -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.scanner.import(options).await;
+                match result {
+                    Ok(asset) => ApiResponse::success(AssetImportResponse::builder().result(asset).build()),
                     Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
                 }
             }
