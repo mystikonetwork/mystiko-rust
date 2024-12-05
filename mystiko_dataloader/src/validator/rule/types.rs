@@ -13,7 +13,7 @@ pub struct ValidateOriginalData<'a, R: LoadedData> {
     pub option: &'a ValidateOption,
 }
 
-impl<'a, R> ValidateOriginalData<'a, R>
+impl<R> ValidateOriginalData<'_, R>
 where
     R: LoadedData,
 {

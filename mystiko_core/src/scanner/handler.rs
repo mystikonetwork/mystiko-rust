@@ -232,7 +232,7 @@ impl ScanRoundOptions {
         );
         let concurrency = std::cmp::max(1, options.concurrency.unwrap_or(1));
         let scan_batch_size = batch_size * concurrency as u64;
-        let total_round = (cms_count + scan_batch_size - 1) / scan_batch_size;
+        let total_round = cms_count.div_ceil(scan_batch_size);
         (0..total_round)
             .map(|_| {
                 ScanRoundOptions::builder()

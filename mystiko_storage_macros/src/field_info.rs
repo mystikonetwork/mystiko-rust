@@ -17,7 +17,7 @@ pub struct FieldAttribute {
     pub length_limit: Option<syn::Expr>,
 }
 
-impl<'a> FieldInfo<'a> {
+impl FieldInfo<'_> {
     pub fn new(
         field: &syn::Field,
         column_enum_name: syn::Ident,

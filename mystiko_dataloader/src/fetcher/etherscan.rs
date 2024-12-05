@@ -108,11 +108,7 @@ where
             .await
             .map_err(|err| FetcherError::AnyhowError(err.into()))?
             .as_u64();
-        let current_safe_block = if current_block >= delay_num_blocks {
-            current_block - delay_num_blocks
-        } else {
-            0
-        };
+        let current_safe_block = current_block.saturating_sub(delay_num_blocks);
         Ok((current_safe_block, client))
     }
 }
@@ -235,7 +231,7 @@ async fn group_fetch<R: LoadedData>(
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let concurrency = if concurrency == 0 { 1 } else { concurrency };
-    let chunk_nums = (options.len() + concurrency - 1) / concurrency;
+    let chunk_nums = options.len().div_ceil(concurrency);
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());
     for chunk in chunks {
