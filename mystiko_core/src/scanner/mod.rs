@@ -1,6 +1,7 @@
 mod error;
 mod handler;
 mod import;
+mod scan;
 
 pub use error::*;
 pub use handler::*;

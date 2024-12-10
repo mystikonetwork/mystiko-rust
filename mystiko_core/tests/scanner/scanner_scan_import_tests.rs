@@ -1,4 +1,6 @@
-use crate::scanner::{build_mock_provider, create_scanner, MockCommitmentPoolContracts, DEFAULT_WALLET_PASSWORD};
+use crate::scanner::{
+    build_mock_provider_with_queued_event, create_scanner, MockCommitmentPoolContracts, DEFAULT_WALLET_PASSWORD,
+};
 use ethers_core::types::U256;
 use mystiko_core::{Commitment, ScannerHandler};
 use mystiko_protos::common::v1::BridgeType;
@@ -20,14 +22,14 @@ async fn test_import_one_queued_commitment() {
     mock_commitment_pool
         .expect_is_spent_nullifier()
         .returning(|_| Ok(false));
-    let provider = build_mock_provider(1);
+    let provider = build_mock_provider_with_queued_event(1);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None,
     )
-    .await;
+        .await;
 
     let options = AssetImportOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
@@ -67,12 +69,12 @@ async fn test_import_two_queued_commitment() {
     mock_commitment_pool
         .expect_is_spent_nullifier()
         .returning(|_| Ok(false));
-    let provider = build_mock_provider(2);
+    let provider = build_mock_provider_with_queued_event(2);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None ,
     )
         .await;
 
@@ -117,12 +119,12 @@ async fn test_import_one_included_commitment() {
     mock_commitment_pool
         .expect_is_spent_nullifier()
         .returning(|_| Ok(false));
-    let provider = build_mock_provider(1);
+    let provider = build_mock_provider_with_queued_event(1);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None ,
     )
         .await;
 
@@ -164,12 +166,12 @@ async fn test_import_two_included_commitment() {
     mock_commitment_pool
         .expect_is_spent_nullifier()
         .returning(|_| Ok(false));
-    let provider = build_mock_provider(2);
+    let provider = build_mock_provider_with_queued_event(2);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None ,
     )
         .await;
 
@@ -212,12 +214,12 @@ async fn test_import_spent_commitment() {
         .expect_get_commitment_included_count()
         .returning(|_| Ok(U256::from(0)));
     mock_commitment_pool.expect_is_spent_nullifier().returning(|_| Ok(true));
-    let provider = build_mock_provider(1);
+    let provider = build_mock_provider_with_queued_event(1);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None
     )
         .await;
 
@@ -256,12 +258,13 @@ async fn test_import_others_commitment() {
         .expect_get_commitment_included_count()
         .returning(|_| Ok(U256::from(0)));
     mock_commitment_pool.expect_is_spent_nullifier().returning(|_| Ok(true));
-    let provider = build_mock_provider(1);
+    let provider = build_mock_provider_with_queued_event(1);
     let (scanner, db, _) = create_scanner(
         account_count,
         None,
         HashMap::from([(chain_id, provider)]),
         Some(mock_commitment_pool),
+        None,
     )
     .await;
 
@@ -298,12 +301,12 @@ async fn test_import_merge_spend_commitment() {
         .expect_get_commitment_included_count()
         .returning(|_| Ok(U256::from(0)));
     mock_commitment_pool.expect_is_spent_nullifier().returning(|_| Ok(true));
-    let provider = build_mock_provider(1);
+    let provider = build_mock_provider_with_queued_event(1);
     let (scanner, db, accounts) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
         HashMap::from([(chain_id, provider)]),
-        Some(mock_commitment_pool),
+        Some(mock_commitment_pool),None
     )
         .await;
 
@@ -383,13 +386,14 @@ async fn test_import_two_chain_commitment() {
     mock_commitment_pool
         .expect_is_spent_nullifier()
         .returning(|_| Ok(false));
-    let provider1 = build_mock_provider(2);
-    let provider2 = build_mock_provider(2);
+    let provider1 = build_mock_provider_with_queued_event(2);
+    let provider2 = build_mock_provider_with_queued_event(2);
     let (scanner, db, _) = create_scanner(
         account_count,
         Some("fragile hat december author fancy include nominee spot produce priority income inmate catch aware level poet group pretty rude exit route pizza perfect anger".to_string()),
-        HashMap::from([(chain_id_1, provider1),(chain_id_2,provider2)]),
+        HashMap::from([(chain_id_1, provider1), (chain_id_2, provider2)]),
         Some(mock_commitment_pool),
+        None,
     )
         .await;
 

@@ -7,7 +7,7 @@ use std::collections::HashMap;
 #[tokio::test]
 async fn test_scan_default_options() {
     let account_count = 1_usize;
-    let (scanner, db, test_accounts) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, test_accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let option = ScanOptions::builder().build();
     let result = scanner.scan(option).await;
     assert!(matches!(result.err().unwrap(), ScannerError::WalletHandlerError(_)));
@@ -58,7 +58,7 @@ async fn test_scan_default_options() {
     }
 
     let account_count = 0_usize;
-    let (scanner, _, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, _, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let option = ScanOptions::builder()
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
         .build();
@@ -72,7 +72,7 @@ async fn test_scan_batch_without_owned() {
         for batch_size in 0..5 {
             for account_count in 1..3 {
                 for commitment_count in 1..10 {
-                    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+                    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
                     let option = ScanOptions::builder()
                         .batch_size(batch_size)
                         .concurrency(concurrency)
@@ -102,7 +102,7 @@ async fn test_scan_batch_with_owned() {
         for batch_size in 0..4 {
             for account_count in 1..3 {
                 for commitment_count in 1..8 {
-                    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None).await;
+                    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
                     let option = ScanOptions::builder()
                         .batch_size(batch_size)
                         .concurrency(concurrency)
@@ -150,7 +150,7 @@ async fn test_scan_batch_with_owned() {
 async fn test_scan_with_start() {
     let account_count = 3_usize;
     let commitment_count = 2_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let mut accounts = db.accounts.find_all().await.unwrap();
     let option = ScanOptions::builder()
         .shielded_addresses(vec![accounts[0].data.shielded_address.clone()])
@@ -192,7 +192,7 @@ async fn test_scan_with_start() {
 async fn test_scan_with_shield_address() {
     let account_count = 3_usize;
     let commitment_count = 4_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
 
     let option = ScanOptions::builder()
@@ -254,7 +254,7 @@ async fn test_scan_with_shield_address() {
 
 #[tokio::test]
 async fn test_scan_batch_with_owned_without_nullifier() {
-    let (scanner, db, test_accounts) = create_scanner(1, None, HashMap::new(), None).await;
+    let (scanner, db, test_accounts) = create_scanner(1, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let commitment_count = 10_usize;
     let option = ScanOptions::builder()
@@ -284,7 +284,7 @@ async fn test_scan_batch_with_owned_without_nullifier() {
 
 #[tokio::test]
 async fn test_scan_batch_with_owned_with_nullifier() {
-    let (scanner, db, test_accounts) = create_scanner(1, None, HashMap::new(), None).await;
+    let (scanner, db, test_accounts) = create_scanner(1, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let commitment_count = 8_usize;
     let option = ScanOptions::builder()

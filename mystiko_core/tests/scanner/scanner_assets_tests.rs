@@ -11,7 +11,7 @@ use std::collections::HashMap;
 async fn test_assets_balance_with_default_option() {
     let account_count = 3_usize;
     let commitment_count = 20_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     let option = AssetsOptions::builder().build();
@@ -92,7 +92,7 @@ async fn test_assets_balance_with_default_option() {
 async fn test_assets_balance_with_option() {
     let account_count = 3_usize;
     let commitment_count = 10_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     let option = AssetsOptions::builder()
@@ -167,7 +167,7 @@ async fn test_assets_balance_with_option() {
 async fn test_assets_balance_with_option_two_version() {
     let account_count = 3_usize;
     let commitment_count = 10_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     let option = AssetsOptions::builder()
@@ -258,7 +258,7 @@ async fn test_assets_balance_with_option_two_version() {
 async fn test_assets_error() {
     let account_count = 3_usize;
     let commitment_count = 10_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     for i in 0..account_count {
@@ -294,7 +294,7 @@ async fn test_assets_error() {
 async fn test_chain_assets() {
     let account_count = 3_usize;
     let commitment_count = 10_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let accounts = db.accounts.find_all().await.unwrap();
     let (mut cms, _) = insert_commitments(db.clone(), commitment_count, None).await;
     let mut amount = BigUint::from(0_u8);

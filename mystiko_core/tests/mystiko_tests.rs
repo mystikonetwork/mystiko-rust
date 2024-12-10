@@ -30,7 +30,7 @@ async fn test_create_with_config_options() {
     let path = server
         .mock("GET", "/config/staging/testnet/8de5858/config.json")
         .with_status(200)
-        .with_body("{\"version\": \"0.2.0\"}")
+        .with_body("{\"version\": \"0.2.0\", \"sequencer\": {}}")
         .create_async()
         .await;
     let database = create_database().await;

@@ -23,6 +23,7 @@ mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-con
 mystiko_crypto = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a", features = ["zkp"] }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
 mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_client" }
+mystiko_sequencer_client = { version = "0.1.0", path = "../mystiko_sequencer_client" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
 mystiko_protocol = { git = "ssh://git@github.com/mystikonetwork/mystiko-protocol.git", rev = "1afe17a" }

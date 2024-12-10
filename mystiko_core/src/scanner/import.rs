@@ -1,22 +1,27 @@
-use crate::scanner::{scan_commitment_by_accounts, ScanningAccount};
+use crate::scanner::scan::{scan_commitment_by_accounts, ScanningAccount};
 use crate::{
     Commitment, CommitmentColumn, CommitmentPoolContractHandler, IncludedCountOptions, IsSpentNullifierOptions,
     Scanner, ScannerError, WalletHandler,
 };
+use anyhow::anyhow;
 use ethers_contract::EthEvent;
-use ethers_core::types::{Log, TxHash, U64};
+use ethers_core::types::{Address, Log, TxHash, U64};
 use ethers_providers::Middleware;
 use log::{error, info};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
+use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
     AssetChainImportOptions, AssetChainImportResult, AssetImportOptions, AssetImportResult,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
+use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
+use mystiko_sequencer_client::SequencerClient;
 use mystiko_storage::{Document, StatementFormatter, Storage};
-use mystiko_utils::address::ethers_address_to_string;
+use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_string};
 use mystiko_utils::convert::{biguint_to_u256, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
 use mystiko_utils::time::current_timestamp;
@@ -24,11 +29,12 @@ use std::cmp::Ordering;
 use std::str::FromStr;
 use std::sync::Arc;
 
-impl<F, S, C, P> Scanner<F, S, C, P>
+impl<F, S, C, Q, P> Scanner<F, S, C, Q, P>
 where
     F: StatementFormatter,
     S: Storage,
     C: CommitmentPoolContractHandler,
+    Q: SequencerClient<FetchChainRequest, FetchChainResponse, ProtosCommitment, ProtosNullifier>,
     P: Providers + 'static,
     ScannerError: From<C::Error>,
 {
@@ -104,22 +110,28 @@ where
             }
         };
         let queued_event_signature = CommitmentQueuedFilter::signature();
+        let cross_chain_event_signature = CommitmentCrossChainFilter::signature();
         let mut found_count = 0;
         let mut imported_count = 0;
         let block_number = receipt.block_number.unwrap_or(U64::from(1)).as_u64();
         for log in receipt.logs {
-            if log.topics.first() == Some(&queued_event_signature) {
-                match self
-                    .parse_queued_log(chain_id, block_number, tx_hash, log, account)
-                    .await
-                {
-                    Ok((found, imported)) => {
-                        found_count += found;
-                        imported_count += imported;
+            if let Some(first_topic) = log.topics.first() {
+                let result = match first_topic {
+                    sig if sig == &queued_event_signature => {
+                        self.parse_queued_log(chain_id, block_number, tx_hash, log, account)
+                            .await
                     }
-                    Err(e) => {
-                        error!("parse queued log error: {:?}", e);
+                    sig if sig == &cross_chain_event_signature => {
+                        self.parse_cross_chain_log(chain_id, log, account).await
                     }
+                    _ => continue,
+                };
+
+                if let Ok((found, imported)) = result {
+                    found_count += found;
+                    imported_count += imported;
+                } else if let Err(e) = result {
+                    error!("parse log error: {:?}", e);
                 }
             }
         }
@@ -132,22 +144,12 @@ where
         chain_id: u64,
         block_number: u64,
         tx_hash: &str,
-        q_log: Log,
+        queued_log: Log,
         account: &[ScanningAccount],
     ) -> Result<(u32, u32), ScannerError> {
-        let contract_address = q_log.address;
-        let contract_address_str = ethers_address_to_string(&q_log.address);
-        let included_count = self
-            .commitment_pool_contracts
-            .get_commitment_included_count(
-                IncludedCountOptions::builder()
-                    .chain_id(chain_id)
-                    .contract_address(q_log.address)
-                    .build(),
-            )
-            .await?
-            .as_u64();
-        let queued_event = match CommitmentQueuedFilter::decode_log(&q_log.into()) {
+        let contract_address = queued_log.address;
+        let contract_address_str = ethers_address_to_string(&queued_log.address);
+        let queued_event = match CommitmentQueuedFilter::decode_log(&queued_log.into()) {
             Ok(event) => event,
             Err(e) => {
                 error!("decode log error: {:?}", e);
@@ -165,13 +167,23 @@ where
             }
         };
 
+        let included_count = self
+            .commitment_pool_contracts
+            .get_commitment_included_count(
+                IncludedCountOptions::builder()
+                    .chain_id(chain_id)
+                    .contract_address(contract_address)
+                    .build(),
+            )
+            .await?
+            .as_u64();
         let leaf_index = queued_event.leaf_index.as_u64();
         let status = if leaf_index.ge(&included_count) {
             CommitmentStatus::Queued as i32
         } else {
             CommitmentStatus::Included as i32
         };
-        let new_commitment = Commitment {
+        let found_commitment = Commitment {
             chain_id,
             contract_address: contract_address_str.clone(),
             bridge_type: BridgeType::from(contract.bridge_type()).into(),
@@ -190,19 +202,99 @@ where
             amount: None,
             nullifier: None,
             shielded_address: None,
-            queued_transaction_hash: None,
+            queued_transaction_hash: Some(tx_hash.to_string()),
             included_transaction_hash: None,
             src_chain_transaction_hash: None,
         };
-        let scan_commitment = scan_commitment_by_accounts(new_commitment, account)?;
+
+        self.scan_import_commitment(found_commitment, contract_address, account)
+            .await
+    }
+
+    async fn parse_cross_chain_log(
+        &self,
+        chain_id: u64,
+        cross_chain_log: Log,
+        account: &[ScanningAccount],
+    ) -> Result<(u32, u32), ScannerError> {
+        let deposit_contract_address = ethers_address_to_string(&cross_chain_log.address);
+        let deposit_contract = self
+            .config
+            .find_deposit_contract_by_address(chain_id, &deposit_contract_address)
+            .ok_or(ScannerError::NoSuchContractConfigError(
+                chain_id,
+                deposit_contract_address,
+            ))?;
+        let peer_chain_id = deposit_contract
+            .peer_chain_id()
+            .ok_or(anyhow!("peer chain id not found"))?;
+        let peer_contract_address = deposit_contract
+            .peer_contract_address()
+            .ok_or(anyhow!("peer contract address not found"))?;
+        let peer_deposit_contract = self
+            .config
+            .find_deposit_contract_by_address(peer_chain_id, peer_contract_address)
+            .ok_or(anyhow!("peer deposit contract not found"))?;
+        let cross_chain_event = match CommitmentCrossChainFilter::decode_log(&cross_chain_log.into()) {
+            Ok(event) => event,
+            Err(e) => {
+                error!("decode log error: {:?}", e);
+                return Ok((0, 0));
+            }
+        };
+        let commitment_hash = u256_to_biguint(&cross_chain_event.commitment);
+        let peer_pool_contract_str = peer_deposit_contract.pool_contract_address();
+        let peer_pool_contract = ethers_address_from_string(peer_pool_contract_str)?;
+        let commitments = self
+            .sequencer
+            .get_commitments(peer_chain_id, &peer_pool_contract, &[commitment_hash.clone()])
+            .await
+            .map_err(|e| anyhow!("sequencer client error: {}", e))?;
+        let commitment_data = commitments.first().ok_or(ScannerError::CommitmentEmptyError)?;
+        let found_commitment = Commitment {
+            chain_id: peer_chain_id,
+            contract_address: peer_pool_contract_str.to_string(),
+            bridge_type: BridgeType::from(peer_deposit_contract.bridge_type()).into(),
+            commitment_hash,
+            asset_symbol: peer_deposit_contract.asset_symbol().to_string(),
+            asset_decimals: peer_deposit_contract.asset_decimals(),
+            asset_address: peer_deposit_contract.asset_address().map(|s| s.to_string()),
+            status: commitment_data.status,
+            spent: false,
+            block_number: commitment_data.block_number,
+            src_chain_block_number: commitment_data.src_chain_block_number,
+            included_block_number: commitment_data.included_block_number,
+            rollup_fee_amount: commitment_data.rollup_fee_as_biguint(),
+            encrypted_note: commitment_data
+                .encrypted_note
+                .as_ref()
+                .map(mystiko_utils::hex::encode_hex),
+            leaf_index: commitment_data.leaf_index,
+            amount: None,
+            nullifier: None,
+            shielded_address: None,
+            queued_transaction_hash: commitment_data.queued_transaction_hash_as_hex(),
+            included_transaction_hash: commitment_data.included_transaction_hash_as_hex(),
+            src_chain_transaction_hash: commitment_data.src_chain_transaction_hash_as_hex(),
+        };
+        self.scan_import_commitment(found_commitment, peer_pool_contract, account)
+            .await
+    }
+
+    async fn scan_import_commitment(
+        &self,
+        import_commitment: Commitment,
+        contract_address: Address,
+        account: &[ScanningAccount],
+    ) -> Result<(u32, u32), ScannerError> {
+        let scan_commitment = scan_commitment_by_accounts(import_commitment, account)?;
         if let Some(mut commitment) = scan_commitment {
-            commitment.queued_transaction_hash = Some(tx_hash.to_string());
             if let Some(ref nullifier) = commitment.nullifier {
                 let spend = self
                     .commitment_pool_contracts
                     .is_spent_nullifier(
                         IsSpentNullifierOptions::builder()
-                            .chain_id(chain_id)
+                            .chain_id(commitment.chain_id)
                             .contract_address(contract_address)
                             .nullifier(biguint_to_u256(nullifier))
                             .build(),
