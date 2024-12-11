@@ -10,7 +10,7 @@ use std::collections::HashMap;
 async fn test_scan_batch_without_owned() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
-    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let option = ScanOptions::builder()
         .batch_size(10)
         .concurrency(1)
@@ -40,7 +40,7 @@ async fn test_scan_batch_without_owned() {
 async fn test_scan_batch_with_owned() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
-    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let option = ScanOptions::builder()
         .batch_size(10)
         .concurrency(2)
@@ -128,7 +128,7 @@ async fn test_scan_batch_with_owned() {
 async fn test_scan_batch_with_owned_without_nullifier() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
-    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None).await;
+    let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
     let option = ScanOptions::builder()
         .batch_size(10)
         .concurrency(2)

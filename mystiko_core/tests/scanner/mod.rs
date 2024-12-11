@@ -2,6 +2,7 @@ mod scanner_assets_tests;
 mod scanner_balance_tests;
 mod scanner_reset_tests;
 mod scanner_scan_bridge_tests;
+mod scanner_scan_import_cross_chain_tests;
 mod scanner_scan_import_tests;
 mod scanner_scan_tests;
 
@@ -28,6 +29,12 @@ use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions};
 use mystiko_protos::data::v1::CommitmentStatus;
+use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
+use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
+use mystiko_sequencer_client::v1::SequencerClientError;
+use mystiko_sequencer_client::{
+    ChainLoadedBlock, CommitmentHashes, CommitmentsWithContract, GetCommitmentHashesOptions, NullifiersWithContract,
+};
 use mystiko_storage::{Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -60,6 +67,42 @@ mock! {
     }
 }
 
+mock! {
+    #[derive(Debug)]
+    SequencerClient {}
+    #[async_trait]
+    impl mystiko_sequencer_client::SequencerClient<FetchChainRequest, FetchChainResponse, ProtosCommitment, ProtosNullifier> for SequencerClient {
+        type Error = SequencerClientError;
+        async fn chain_loaded_block(&self, chain_id: u64, with_contracts: bool) ->Result<ChainLoadedBlock, SequencerClientError>;
+        async fn contract_loaded_block(&self, chain_id: u64, contract_address: &Address) -> Result<u64, SequencerClientError>;
+        async fn fetch_chain(&self, request: FetchChainRequest) -> Result<FetchChainResponse, SequencerClientError>;
+        async fn get_commitments(
+            &self,
+            chain_id: u64,
+            contract_address: &Address,
+            commitment_hashes: &[BigUint],
+        ) -> Result<Vec<ProtosCommitment>, SequencerClientError>;
+        async fn get_commitments_by_tx_hash(
+            &self,
+            chain_id: u64,
+            tx_hash: &TxHash) -> Result<CommitmentsWithContract<ProtosCommitment>, SequencerClientError>;
+        async fn get_commitment_hashes(
+            &self,
+            options: &GetCommitmentHashesOptions) -> Result<CommitmentHashes, SequencerClientError>;
+        async fn get_nullifiers(
+            &self,
+            chain_id: u64,
+            contract_address: &Address,
+            nullifier_hashes: &[BigUint],
+        ) -> Result<Vec<ProtosNullifier>, SequencerClientError>;
+        async fn get_nullifiers_by_tx_hash(
+            &self,
+            chain_id: u64,
+            tx_hash: &TxHash) -> Result<NullifiersWithContract<ProtosNullifier>, SequencerClientError>;
+        async fn health_check(&self) -> Result<(), SequencerClientError>;
+    }
+}
+
 #[derive(Debug, TypedBuilder)]
 pub struct TestAccount {
     shielded_address: ShieldedAddress,
@@ -71,8 +114,9 @@ async fn create_scanner(
     mnemonic_phrase: Option<String>,
     provider: HashMap<u64, MockProvider>,
     commitment_pool_contracts: Option<MockCommitmentPoolContracts>,
+    sequencer_client: Option<MockSequencerClient>,
 ) -> (
-    Scanner<SqlStatementFormatter, SqliteStorage, MockCommitmentPoolContracts, MockProviders>,
+    Scanner<SqlStatementFormatter, SqliteStorage, MockCommitmentPoolContracts, MockSequencerClient, MockProviders>,
     Arc<Database<SqlStatementFormatter, SqliteStorage>>,
     Vec<TestAccount>,
 ) {
@@ -140,10 +184,12 @@ async fn create_scanner(
             .ok_or(anyhow::anyhow!("No provider for chain_id {}", chain_id))
     });
     let pool_contracts = commitment_pool_contracts.unwrap_or_default();
+    let sequencer = sequencer_client.unwrap_or_default();
     let options = ScannerOptions::builder()
         .db(db.clone())
         .providers(providers)
         .commitment_pool_contracts(pool_contracts)
+        .sequencer(sequencer)
         .build();
     (Scanner::new(config, options), db, test_accounts)
 }
@@ -209,7 +255,7 @@ fn default_commitment() -> Commitment {
     }
 }
 
-fn build_mock_provider(log_count: u32) -> MockProvider {
+fn build_mock_provider_with_queued_event(log_count: u32) -> MockProvider {
     let mut mock_provider = MockProvider::new();
     mock_provider.expect_request().returning(move |method, _| match method {
         "eth_getTransactionReceipt" => {
@@ -246,6 +292,70 @@ fn build_mock_provider(log_count: u32) -> MockProvider {
                     transaction_hash: Some(H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap()),
                     transaction_index: Some(U64::from(51)),
                 }
+            ];
+            let receipt = TransactionReceipt {
+                transaction_hash: H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78")
+                    .unwrap(),
+                block_number: Some(U64::from(10000000)),
+                logs: logs.split_at(log_count as usize).0.to_vec(),
+                ..Default::default()
+            };
+            let receipt = serde_json::json!(receipt);
+            Ok(receipt)
+        }
+        _ => Err(ethers_providers::ProviderError::CustomError(
+            "mock provider not support".to_string(),
+        )),
+    });
+
+    mock_provider
+}
+
+fn build_mock_provider_with_cross_chain_event(log_count: u32) -> MockProvider {
+    let mut mock_provider = MockProvider::new();
+    mock_provider.expect_request().returning(move |method, _| match method {
+        "eth_getTransactionReceipt" => {
+            let logs = vec![
+                Log {
+                    address: Address::from_str("0x961F315A836542e603A3df2E0dd9d4ECd06ebC67").unwrap(),
+                    block_hash: Some(
+                        H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap(),
+                    ),
+                    block_number: Some(U64::from(10000000)),
+                    data: vec![].into(),
+                    log_index: Some(U256::from(200)),
+                    transaction_log_index: None,
+                    log_type: None,
+                    removed: Some(false),
+                    topics: vec![
+                        H256::from_str("0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe").unwrap(),
+                        H256::from_str("0x1db84c1b0bd7877f4cddd3f5b0a8ae202b017234f84dc75face85b7556951fc4").unwrap(),
+                    ],
+                    transaction_hash: Some(
+                        H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap(),
+                    ),
+                    transaction_index: Some(U64::from(51)),
+                },
+                Log {
+                    address: Address::from_str("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2").unwrap(),
+                    block_hash: Some(
+                        H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap(),
+                    ),
+                    block_number: Some(U64::from(10000001)),
+                    data: vec![].into(),
+                    log_index: Some(U256::from(201)),
+                    transaction_log_index: None,
+                    log_type: None,
+                    removed: Some(false),
+                    topics: vec![
+                        H256::from_str("0xd106eb38b3368b7c294e36fae5513fdefe880be5abfad529b37b044f2fdd2dbe").unwrap(),
+                        H256::from_str("0x18812c5d6d451a1c7396e04aaaed04ddbbe8a3908d3db55a890a9527ba4ea8c3").unwrap(),
+                    ],
+                    transaction_hash: Some(
+                        H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap(),
+                    ),
+                    transaction_index: Some(U64::from(51)),
+                },
             ];
             let receipt = TransactionReceipt {
                 transaction_hash: H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78")
