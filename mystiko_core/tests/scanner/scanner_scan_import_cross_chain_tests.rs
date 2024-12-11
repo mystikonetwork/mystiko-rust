@@ -48,7 +48,7 @@ async fn test_import_one_cross_chain_commitment() {
         r,
         AssetImportResult::builder()
             .chains([AssetChainImportResult::builder()
-                .chain_id(chain_id)
+                .chain_id(97_u32)
                 .found_count(1_u32)
                 .imported_count(0_u32)
                 .build()])
@@ -107,7 +107,7 @@ async fn test_import_two_cross_chain_commitment() {
         r,
         AssetImportResult::builder()
             .chains([AssetChainImportResult::builder()
-                .chain_id(chain_id)
+                .chain_id(97_u32)
                 .found_count(2_u32)
                 .imported_count(2_u32)
                 .build()])
