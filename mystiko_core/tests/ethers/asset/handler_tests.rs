@@ -278,6 +278,70 @@ async fn test_erc20_approve() {
 }
 
 #[tokio::test]
+async fn test_erc20_approve_reset_allowance() {
+    let mut provider = MockProvider::new();
+    let amount = U256::from(1234567890123456789_u64);
+    let amount_hex = format!("{:x}", amount);
+    provider
+        .expect_request()
+        .withf(|method, params| {
+            if method != "eth_call" {
+                return false;
+            }
+            match params {
+                JsonRpcParams::Value(value) => {
+                    let params = serde_json::to_string(value).unwrap();
+                    // the balanceOf and allowance method signatures
+                    params.contains("0x70a08231") || params.contains("0xdd62ed3e")
+                }
+                _ => false,
+            }
+        })
+        .returning(move |_, params| match params {
+            JsonRpcParams::Value(params) => {
+                let params = serde_json::to_string(&params).unwrap();
+                if params.contains("0xdd62ed3e") {
+                    Ok(serde_json::json!(U256::from(0x2_u64).encode_hex()))
+                } else {
+                    Ok(serde_json::json!(amount.encode_hex()))
+                }
+            }
+            _ => Err(ethers_providers::ProviderError::CustomError(
+                "unexpected params".to_string(),
+            )),
+        });
+    let mut signer = MockTransactionSigner::new();
+    signer
+        .expect_send_transaction()
+        .withf(move |chain_id, tx| {
+            *chain_id == 1_u64
+                && tx.data().unwrap().clone().encode_hex().contains("095ea7b3")
+                && tx.data().unwrap().clone().encode_hex().contains(amount_hex.as_str())
+        })
+        .returning(|_, _| {
+            Ok(TxHash::decode_hex("0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f").unwrap())
+        });
+    let assets = setup(1, provider);
+    let tx_hash = assets
+        .erc20_approve(
+            Erc20ApproveOptions::<TransactionRequest, MockTransactionSigner>::builder()
+                .chain_id(1_u64)
+                .asset_address(ethers_address_from_string("0x95222290DD7278Aa3Ddd389Cc1E1d165CC4BAfe5").unwrap())
+                .owner(ethers_address_from_string("0x8e22c73915cbcb5bda1cd8a15a7e2a6c1d370335").unwrap())
+                .recipient(ethers_address_from_string("0xF0bAfD58E23726785A1681e1DEa0da15cB038C61").unwrap())
+                .amount(amount)
+                .signer(signer)
+                .build(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(
+        tx_hash.unwrap().encode_hex(),
+        "0xbabc0eb1e1d720da01feefb176bae8683183dc8b2a4d599e91bda5efca9ef60f"
+    );
+}
+
+#[tokio::test]
 async fn test_erc20_approve_with_sufficient_allowance() {
     let mut provider = MockProvider::new();
     provider
