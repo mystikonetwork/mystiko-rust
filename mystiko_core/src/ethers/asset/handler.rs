@@ -10,7 +10,6 @@ use mystiko_abi::erc20::ERC20;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_storage::{StatementFormatter, Storage};
 use std::fmt::Debug;
-use std::ops::Sub;
 use std::sync::Arc;
 use std::time::Duration;
 use thiserror::Error;
@@ -151,8 +150,7 @@ where
         if allowance.le(&options.amount) {
             let mut tx = options.tx.into();
             tx.set_to(options.asset_address);
-            let allowance = options.amount.sub(allowance);
-            if let Some(call_data) = contract.approve(options.recipient, allowance).calldata() {
+            if let Some(call_data) = contract.approve(options.recipient, options.amount).calldata() {
                 tx.set_data(call_data);
             }
             let tx_hash = if let Some(timeout_ms) = options.timeout_ms {
