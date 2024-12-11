@@ -26,6 +26,7 @@ use mystiko_utils::convert::{biguint_to_u256, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
 use mystiko_utils::time::current_timestamp;
 use std::cmp::Ordering;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -45,115 +46,115 @@ where
         let tasks = options
             .chains
             .iter()
-            .map(|chain| self.asset_chain_import(&scan_accounts, chain))
+            .map(|chain| self.asset_import_by_chain(&scan_accounts, chain))
             .collect::<Vec<_>>();
         let results = futures::future::try_join_all(tasks).await?;
-        let chains = results.into_iter().collect::<Vec<_>>();
+        let flattened: Vec<AssetChainImportResult> = results.into_iter().flatten().collect();
+        let aggregated: HashMap<u64, AssetChainImportResult> =
+            flattened.into_iter().fold(HashMap::new(), |mut acc, entry| {
+                acc.entry(entry.chain_id)
+                    .and_modify(|existing| {
+                        existing.imported_count += entry.imported_count;
+                        existing.found_count += entry.found_count;
+                    })
+                    .or_insert(entry);
+                acc
+            });
+        let chains: Vec<AssetChainImportResult> = aggregated.into_values().collect();
         Ok(AssetImportResult::builder().chains(chains).build())
     }
 
-    async fn asset_chain_import(
+    async fn asset_import_by_chain(
         &self,
         account: &[ScanningAccount],
         options: &AssetChainImportOptions,
-    ) -> Result<AssetChainImportResult, ScannerError> {
+    ) -> Result<Vec<AssetChainImportResult>, ScannerError> {
         let provider = self.providers.get_provider(options.chain_id).await?;
         let tasks = options.tx_hashes.iter().map(|tx_hash| async {
-            self.asset_import_from_provider(account, provider.clone(), options.chain_id, tx_hash)
+            self.asset_import_by_chain_transaction(account, provider.clone(), options.chain_id, tx_hash)
                 .await
         });
-        let (found, imported) = futures::future::try_join_all(tasks)
-            .await?
-            .into_iter()
-            .fold((0_u32, 0_u32), |(total_found, total_imported), (f, i)| {
-                (total_found + f, total_imported + i)
-            });
-        Ok(AssetChainImportResult::builder()
-            .chain_id(options.chain_id)
-            .imported_count(imported)
-            .found_count(found)
-            .build())
+        let result = futures::future::try_join_all(tasks).await?;
+        Ok(result.into_iter().flatten().collect::<Vec<_>>())
     }
 
-    async fn asset_import_from_provider(
+    async fn asset_import_by_chain_transaction(
         &self,
         account: &[ScanningAccount],
         provider: Arc<Provider>,
         chain_id: u64,
         tx_hash: &str,
-    ) -> Result<(u32, u32), ScannerError> {
+    ) -> Result<Vec<AssetChainImportResult>, ScannerError> {
         match self
-            .asset_import_from_provider_by_tx(account, provider, chain_id, tx_hash)
+            .asset_import_by_transaction_logs(account, provider, chain_id, tx_hash)
             .await
         {
-            Ok((found, imported)) => Ok((found, imported)),
+            Ok(r) => Ok(r),
             Err(e) => {
                 error!("asset import chain {:?} tx {:?} error: {:?}", chain_id, tx_hash, e);
-                Ok((0, 0))
+                Ok(vec![])
             }
         }
     }
 
-    async fn asset_import_from_provider_by_tx(
+    async fn asset_import_by_transaction_logs(
         &self,
         account: &[ScanningAccount],
         provider: Arc<Provider>,
         chain_id: u64,
         tx_hash: &str,
-    ) -> Result<(u32, u32), ScannerError> {
+    ) -> Result<Vec<AssetChainImportResult>, ScannerError> {
+        let mut import_result = vec![];
         let tx_hash_h = TxHash::from_str(tx_hash)?;
         let receipt = match provider.get_transaction_receipt(tx_hash_h).await? {
             Some(receipt) => receipt,
             None => {
                 info!("transaction {:?} receipt not found", tx_hash);
-                return Ok((0, 0));
+                return Ok(import_result);
             }
         };
         let queued_event_signature = CommitmentQueuedFilter::signature();
         let cross_chain_event_signature = CommitmentCrossChainFilter::signature();
-        let mut found_count = 0;
-        let mut imported_count = 0;
         let block_number = receipt.block_number.unwrap_or(U64::from(1)).as_u64();
         for log in receipt.logs {
             if let Some(first_topic) = log.topics.first() {
                 let result = match first_topic {
                     sig if sig == &queued_event_signature => {
-                        self.parse_queued_log(chain_id, block_number, tx_hash, log, account)
+                        self.parse_queued_commitment_log(chain_id, block_number, tx_hash, log, account)
                             .await
                     }
                     sig if sig == &cross_chain_event_signature => {
-                        self.parse_cross_chain_log(chain_id, log, account).await
+                        self.parse_cross_chain_commitment_log(chain_id, log, account).await
                     }
                     _ => continue,
                 };
 
-                if let Ok((found, imported)) = result {
-                    found_count += found;
-                    imported_count += imported;
+                if let Ok(Some(r)) = result {
+                    import_result.push(r);
                 } else if let Err(e) = result {
                     error!("parse log error: {:?}", e);
                 }
             }
         }
 
-        Ok((found_count, imported_count))
+        Ok(import_result)
     }
 
-    async fn parse_queued_log(
+    async fn parse_queued_commitment_log(
         &self,
         chain_id: u64,
         block_number: u64,
         tx_hash: &str,
         queued_log: Log,
         account: &[ScanningAccount],
-    ) -> Result<(u32, u32), ScannerError> {
+    ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let contract_address = queued_log.address;
         let contract_address_str = ethers_address_to_string(&queued_log.address);
         let queued_event = match CommitmentQueuedFilter::decode_log(&queued_log.into()) {
             Ok(event) => event,
             Err(e) => {
                 error!("decode log error: {:?}", e);
-                return Ok((0, 0));
+                return Ok(None);
             }
         };
         let contract = match self
@@ -163,7 +164,7 @@ where
             Some(contract) => contract,
             None => {
                 info!("pool contract {:?} not found", contract_address_str);
-                return Ok((0, 0));
+                return Ok(None);
             }
         };
 
@@ -211,12 +212,12 @@ where
             .await
     }
 
-    async fn parse_cross_chain_log(
+    async fn parse_cross_chain_commitment_log(
         &self,
         chain_id: u64,
         cross_chain_log: Log,
         account: &[ScanningAccount],
-    ) -> Result<(u32, u32), ScannerError> {
+    ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let deposit_contract_address = ethers_address_to_string(&cross_chain_log.address);
         let deposit_contract = self
             .config
@@ -239,7 +240,7 @@ where
             Ok(event) => event,
             Err(e) => {
                 error!("decode log error: {:?}", e);
-                return Ok((0, 0));
+                return Ok(None);
             }
         };
         let commitment_hash = u256_to_biguint(&cross_chain_event.commitment);
@@ -286,7 +287,8 @@ where
         import_commitment: Commitment,
         contract_address: Address,
         account: &[ScanningAccount],
-    ) -> Result<(u32, u32), ScannerError> {
+    ) -> Result<Option<AssetChainImportResult>, ScannerError> {
+        let chain_id = import_commitment.chain_id;
         let scan_commitment = scan_commitment_by_accounts(import_commitment, account)?;
         if let Some(mut commitment) = scan_commitment {
             if let Some(ref nullifier) = commitment.nullifier {
@@ -306,9 +308,21 @@ where
                 }
             }
             self.update_or_insert_commitment(commitment).await?;
-            Ok((1, 1))
+            Ok(Some(
+                AssetChainImportResult::builder()
+                    .chain_id(chain_id)
+                    .imported_count(1_u32)
+                    .found_count(1_u32)
+                    .build(),
+            ))
         } else {
-            Ok((1, 0))
+            Ok(Some(
+                AssetChainImportResult::builder()
+                    .chain_id(chain_id)
+                    .found_count(1_u32)
+                    .imported_count(0_u32)
+                    .build(),
+            ))
         }
     }
 

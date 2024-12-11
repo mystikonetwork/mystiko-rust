@@ -418,18 +418,11 @@ async fn test_import_two_chain_commitment() {
     assert_eq!(
         r,
         AssetImportResult::builder()
-            .chains([
-                AssetChainImportResult::builder()
-                    .chain_id(chain_id_1)
-                    .found_count(2_u32)
-                    .imported_count(2_u32)
-                    .build(),
-                AssetChainImportResult::builder()
-                    .chain_id(chain_id_2)
-                    .found_count(0_u32)
-                    .imported_count(0_u32)
-                    .build()
-            ])
+            .chains([AssetChainImportResult::builder()
+                .chain_id(chain_id_1)
+                .found_count(2_u32)
+                .imported_count(2_u32)
+                .build()])
             .build()
     );
     let cm = db.commitments.find_all().await.unwrap();
