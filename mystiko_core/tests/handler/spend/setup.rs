@@ -9,6 +9,7 @@ use mystiko_core::{
 };
 use mystiko_crypto::crypto::encrypt_asymmetric;
 use mystiko_datapacker_client::DataPackerClient;
+use mystiko_datapacker_common::ZstdCompression;
 use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protocol::address::ShieldedAddress;
 use mystiko_protos::common::v1::BridgeType;
@@ -37,6 +38,7 @@ pub(crate) type SpendsOptionsType<R = MockRelayerClient, K = MockDataPackerClien
     R,
     MockZKProver,
     K,
+    ZstdCompression,
 >;
 
 pub(crate) type SpendsType<R = MockRelayerClient, K = MockDataPackerClient> = Spends<
@@ -49,6 +51,7 @@ pub(crate) type SpendsType<R = MockRelayerClient, K = MockDataPackerClient> = Sp
     R,
     MockZKProver,
     K,
+    ZstdCompression,
 >;
 
 #[derive(Debug, Default, TypedBuilder)]
@@ -130,6 +133,7 @@ where
         .providers(providers)
         .signer_providers(signer_providers)
         .packer(options.data_packer_client)
+        .compression(ZstdCompression)
         .build();
     let handler = SpendsType::new(handler_options);
     (config, database, handler)

@@ -10,6 +10,7 @@ use ethers_core::types::{TxHash, U256};
 use ethers_signers::LocalWallet;
 use mystiko_core::{PrivateKeySigner, SpendHandler};
 use mystiko_crypto::merkle_tree::MerkleTree;
+use mystiko_datapacker_common::{Compression, ZstdCompression};
 use mystiko_ethers::JsonRpcParams;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::handler::v1::{CreateSpendOptions, SendSpendOptions};
@@ -246,7 +247,7 @@ async fn test_build_from_raw() {
     let (_, private_key) = generate_private_key();
     let merkle_tree = generate_merkle_tree(4_usize);
     let new_merkle_tree = generate_merkle_tree(6_usize);
-    let raw_merkle_tree = build_raw_merkle_tree_bytes(&merkle_tree);
+    let raw_merkle_tree = build_raw_merkle_tree_bytes(&merkle_tree).await;
     let tree_root = biguint_to_u256(&merkle_tree.root());
     let new_tree_root = biguint_to_u256(&new_merkle_tree.root());
     let tx_hash = TxHash::from_str("0xa35c998eaf5df995dba638efc114a8f58353784d08a60467fba6ed1e8f0e64a8").unwrap();
@@ -466,7 +467,7 @@ fn build_mock_provider() -> MockProvider {
     mock_provider
 }
 
-fn build_raw_merkle_tree_bytes(tree: &MerkleTree) -> Vec<u8> {
+async fn build_raw_merkle_tree_bytes(tree: &MerkleTree) -> Vec<u8> {
     let proto_tree = ProtoMerkleTree::builder()
         .loaded_block_number(200010000_u64)
         .root_hash(biguint_to_bytes(&tree.root()))
@@ -474,5 +475,5 @@ fn build_raw_merkle_tree_bytes(tree: &MerkleTree) -> Vec<u8> {
         .build();
     let mut data = Vec::new();
     proto_tree.encode(&mut data).unwrap();
-    zstd::encode_all(&*data, 0).unwrap()
+    ZstdCompression.compress(&data).await.unwrap()
 }

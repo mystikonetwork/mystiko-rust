@@ -10,6 +10,7 @@ use mystiko_config::MystikoConfig;
 use mystiko_crypto::zkp::{G16Proof, G16Prover, ZKProver};
 use mystiko_datapacker_client::v1::DataPackerClient as DataPackerClientV1;
 use mystiko_datapacker_client::DataPackerClient;
+use mystiko_datapacker_common::{Compression, ZstdCompression};
 use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::core::document::v1::Spend as ProtoSpend;
@@ -43,6 +44,7 @@ pub struct Spends<
     R = RelayerClientV2,
     V = G16Prover,
     K = DataPackerClientV1,
+    X = Box<dyn Compression>,
 > {
     pub(crate) db: Arc<Database<F, S>>,
     pub(crate) static_cache: Arc<GzipStaticCache>,
@@ -57,6 +59,7 @@ pub struct Spends<
     pub(crate) prover: Arc<V>,
     pub(crate) packer: Arc<K>,
     pub(crate) cache_tree: CacheMerkleTree,
+    pub(crate) compression: Arc<X>,
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -71,6 +74,7 @@ pub struct SpendsOptions<
     R = RelayerClientV2,
     V = G16Prover,
     K = DataPackerClientV1,
+    X = Box<dyn Compression>,
 > {
     db: Arc<Database<F, S>>,
     static_cache: Arc<Box<dyn StaticCache>>,
@@ -83,14 +87,15 @@ pub struct SpendsOptions<
     relayers: Arc<R>,
     prover: Arc<V>,
     packer: Arc<K>,
+    compression: Arc<X>,
 }
 
 type Result<T, E = SpendsError> = std::result::Result<T, E>;
 
 #[async_trait]
-impl<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X>
     SpendHandler<ProtoSpend, QuoteSpendOptions, SpendQuote, CreateSpendOptions, SpendSummary, SendSpendOptions>
-    for Spends<F, S, A, C, T, P, R, V, K>
+    for Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -101,6 +106,7 @@ where
     R: RelayerClient,
     V: ZKProver<G16Proof>,
     K: DataPackerClient<ChainData, MerkleTree>,
+    X: Compression + 'static,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {
@@ -319,6 +325,7 @@ where
     async fn from_context(context: &MystikoContext<F, S>) -> std::result::Result<Self, MystikoError> {
         let relayers = RelayerClientV2::new(context.providers.clone(), context.relayer_client_options.clone()).await?;
         let packer = DataPackerClientV1::new(context.config.clone());
+        let compression = Arc::new(Box::new(ZstdCompression) as Box<dyn Compression>);
         let options = SpendsOptions::<F, S, A, C, T>::builder()
             .db(context.db.clone())
             .static_cache(context.static_cache.clone())
@@ -331,12 +338,13 @@ where
             .relayers(relayers)
             .prover(G16Prover)
             .packer(packer)
+            .compression(compression)
             .build();
         Ok(Self::new(options))
     }
 }
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -347,9 +355,10 @@ where
     R: RelayerClient,
     V: ZKProver<G16Proof>,
     K: DataPackerClient<ChainData, MerkleTree>,
+    X: Compression + 'static,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {
-    pub fn new(options: SpendsOptions<F, S, A, C, T, P, R, V, K>) -> Self {
+    pub fn new(options: SpendsOptions<F, S, A, C, T, P, R, V, K, X>) -> Self {
         let wallets = Wallets::new(options.db.clone());
         Self::builder()
             .db(options.db)
@@ -365,6 +374,7 @@ where
             .prover(options.prover)
             .packer(options.packer)
             .cache_tree(CacheMerkleTree::new())
+            .compression(options.compression)
             .build()
     }
 }

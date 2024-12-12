@@ -3425,6 +3425,7 @@ dependencies = [
  "mystiko_crypto",
  "mystiko_dataloader",
  "mystiko_datapacker_client",
+ "mystiko_datapacker_common",
  "mystiko_ethers",
  "mystiko_grpc",
  "mystiko_protocol",

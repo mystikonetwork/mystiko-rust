@@ -2,7 +2,7 @@ use crate::{Spend, Spends, SpendsError};
 use mystiko_protos::core::v1::SpendStatus;
 use mystiko_storage::{Document, StatementFormatter, Storage};
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,

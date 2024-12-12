@@ -9,6 +9,7 @@ use ethers_core::types::{Bytes, TxHash};
 use mystiko_abi::commitment_pool::TransactRequest;
 use mystiko_crypto::zkp::{G16Proof, ZKProver};
 use mystiko_datapacker_client::DataPackerClient;
+use mystiko_datapacker_common::Compression;
 use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::common::v1::BridgeType;
@@ -26,7 +27,7 @@ use std::sync::Arc;
 use std::time::Duration;
 use typed_builder::TypedBuilder;
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -37,6 +38,7 @@ where
     R: RelayerClient,
     V: ZKProver<G16Proof>,
     K: DataPackerClient<ChainData, ProtoMerkleTree>,
+    X: Compression + 'static,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<T::Error> + From<R::Error> + From<V::Error>,
 {
