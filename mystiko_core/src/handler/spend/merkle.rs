@@ -8,6 +8,7 @@ use mystiko_dataloader::data::LiteData;
 use mystiko_dataloader::fetcher::DataFetcher;
 use mystiko_dataloader::fetcher::{ChainLoadedBlockOptions, ContractFetchOptions, FetchOptions, ProviderFetcher};
 use mystiko_datapacker_client::DataPackerClient;
+use mystiko_datapacker_common::Compression;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::handler::v1::SendSpendOptions;
 use mystiko_protos::data::v1::{ChainData, MerkleTree as ProtoMerkleTree};
@@ -16,13 +17,12 @@ use mystiko_storage::{StatementFormatter, Storage};
 use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::{biguint_to_u256, bytes_to_biguint};
 use num_bigint::BigUint;
-use prost::Message;
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use typed_builder::TypedBuilder;
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -31,6 +31,7 @@ where
     V: ZKProver<G16Proof>,
     P: Providers + 'static,
     K: DataPackerClient<ChainData, ProtoMerkleTree>,
+    X: Compression + 'static,
     SpendsError: From<A::Error> + From<C::Error> + From<V::Error>,
 {
     pub(crate) async fn build_merkle_tree(
@@ -76,8 +77,8 @@ where
         raw: &[u8],
         expect_leaf_index: u64,
     ) -> Result<MerkleTreeWrapper, SpendsError> {
-        let decompress_data = zstd::decode_all(raw)?;
-        let proto_merkle_tree = ProtoMerkleTree::decode(&*decompress_data)?;
+        let decompress_data = self.compression.decompress(raw).await?;
+        let proto_merkle_tree = ProtoMerkleTree::try_from(&decompress_data)?;
         let wrap_tree = MerkleTreeWrapper::builder()
             .leaves(
                 proto_merkle_tree
