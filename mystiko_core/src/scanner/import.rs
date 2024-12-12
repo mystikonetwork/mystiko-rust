@@ -10,7 +10,7 @@ use ethers_providers::Middleware;
 use log::{error, info};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
-use mystiko_config::{DepositContractConfig, PoolContractConfig};
+use mystiko_config::PoolContractConfig;
 use mystiko_ethers::{Provider, Providers};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
@@ -68,12 +68,12 @@ where
 
     async fn asset_import_by_chain(
         &self,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
         options: &AssetChainImportOptions,
     ) -> Result<Vec<AssetChainImportResult>, ScannerError> {
         let provider = self.providers.get_provider(options.chain_id).await?;
         let tasks = options.tx_hashes.iter().map(|tx_hash| async {
-            self.asset_import_by_chain_transaction(account, provider.clone(), options.chain_id, tx_hash)
+            self.asset_import_by_chain_transaction(accounts, provider.clone(), options.chain_id, tx_hash)
                 .await
         });
         let result = futures::future::join_all(tasks).await;
@@ -82,12 +82,12 @@ where
 
     pub(crate) async fn asset_import_by_chain_transaction(
         &self,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
         provider: Arc<Provider>,
         chain_id: u64,
         tx_hash: &str,
     ) -> Vec<AssetChainImportResult> {
-        self.asset_import_by_transaction_logs(account, provider, chain_id, tx_hash)
+        self.asset_import_by_transaction_logs(accounts, provider, chain_id, tx_hash)
             .await
             .unwrap_or_else(|e| {
                 error!("asset import chain {:?} tx {:?} error: {:?}", chain_id, tx_hash, e);
@@ -97,7 +97,7 @@ where
 
     async fn asset_import_by_transaction_logs(
         &self,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
         provider: Arc<Provider>,
         chain_id: u64,
         tx_hash: &str,
@@ -118,11 +118,11 @@ where
             if let Some(first_topic) = log.topics.first() {
                 let result = match first_topic {
                     sig if sig == &queued_event_signature => {
-                        self.parse_queued_commitment_log(chain_id, block_number, tx_hash, log, account)
+                        self.parse_queued_commitment_log(chain_id, block_number, tx_hash, log, accounts)
                             .await
                     }
                     sig if sig == &cross_chain_event_signature => {
-                        self.parse_cross_chain_commitment_log(chain_id, log, account).await
+                        self.parse_cross_chain_commitment_log(chain_id, log, accounts).await
                     }
                     _ => continue,
                 };
@@ -144,7 +144,7 @@ where
         block_number: u64,
         tx_hash: &str,
         queued_log: Log,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
     ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let contract_address = queued_log.address;
         let contract_address_str = ethers_address_to_string(&queued_log.address);
@@ -206,7 +206,7 @@ where
             src_chain_transaction_hash: None,
         };
 
-        self.scan_import_commitment(found_commitment, contract_address, account)
+        self.scan_import_commitment(found_commitment, contract_address, accounts)
             .await
     }
 
@@ -214,7 +214,7 @@ where
         &self,
         chain_id: u64,
         cross_chain_log: Log,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
     ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let deposit_contract_address = ethers_address_to_string(&cross_chain_log.address);
         let deposit_contract = self
@@ -246,7 +246,7 @@ where
             }
         };
         let commitment_hash = u256_to_biguint(&cross_chain_event.commitment);
-        self.import_asset_by_commitment_hash(peer_chain_id, peer_pool_contract, commitment_hash.clone(), account)
+        self.import_asset_by_commitment_hash(peer_chain_id, peer_pool_contract, commitment_hash.clone(), accounts)
             .await
     }
 
@@ -255,7 +255,7 @@ where
         chain_id: u64,
         pool_contract_cfg: &PoolContractConfig,
         commitment_hash: BigUint,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
     ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let pool_contract = ethers_address_from_string(pool_contract_cfg.address())?;
         let commitments = self
@@ -290,7 +290,7 @@ where
             included_transaction_hash: commitment_data.included_transaction_hash_as_hex(),
             src_chain_transaction_hash: commitment_data.src_chain_transaction_hash_as_hex(),
         };
-        self.scan_import_commitment(found_commitment, pool_contract, account)
+        self.scan_import_commitment(found_commitment, pool_contract, accounts)
             .await
     }
 
@@ -298,10 +298,10 @@ where
         &self,
         import_commitment: Commitment,
         contract_address: Address,
-        account: &[ScanningAccount],
+        accounts: &[ScanningAccount],
     ) -> Result<Option<AssetChainImportResult>, ScannerError> {
         let chain_id = import_commitment.chain_id;
-        let scan_commitment = scan_commitment_by_accounts(import_commitment, account)?;
+        let scan_commitment = scan_commitment_by_accounts(import_commitment, accounts)?;
         if let Some(mut commitment) = scan_commitment {
             if let Some(ref nullifier) = commitment.nullifier {
                 let spend = self

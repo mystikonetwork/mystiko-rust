@@ -9,8 +9,8 @@ use itertools::Itertools;
 use mystiko_config::MystikoConfig;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::scanner::v1::{
-    AssetImportOptions, AssetImportResult, AssetSyncOptions, AssetsByChain, AssetsOptions, BalanceOptions,
-    BalanceResult, ResetResult, ScanOptions, ScanResult, ScannerResetOptions,
+    AssetImportOptions, AssetImportResult, AssetsByChain, AssetsOptions, BalanceOptions, BalanceResult, ResetResult,
+    ScanOptions, ScanResult, ScannerResetOptions, SyncOptions,
 };
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
@@ -82,7 +82,7 @@ where
 #[async_trait]
 impl<F, S, C, Q, P>
     ScannerHandler<
-        AssetSyncOptions,
+        SyncOptions,
         ScanOptions,
         ScanResult,
         ScannerResetOptions,
@@ -103,7 +103,7 @@ where
     ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
-    async fn sync(&self, options: AssetSyncOptions) -> Result<BalanceResult, Self::Error> {
+    async fn sync(&self, options: SyncOptions) -> Result<(), Self::Error> {
         self.asset_sync(options).await
     }
 
