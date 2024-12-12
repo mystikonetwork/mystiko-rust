@@ -18,7 +18,7 @@ use std::ops::{Mul, Sub};
 use std::str::FromStr;
 use std::time::Duration;
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,

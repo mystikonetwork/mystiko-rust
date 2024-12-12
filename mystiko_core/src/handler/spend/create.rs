@@ -11,7 +11,7 @@ use mystiko_storage::{StatementFormatter, Storage};
 use num_bigint::BigUint;
 use num_traits::Zero;
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,

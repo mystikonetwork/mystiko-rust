@@ -12,6 +12,7 @@ use mystiko_crypto::crypto::decrypt_symmetric;
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_crypto::zkp::{G16Proof, ZKProver, ZKVerifyOptions};
 use mystiko_datapacker_client::DataPackerClient;
+use mystiko_datapacker_common::Compression;
 use mystiko_ethers::Providers;
 use mystiko_protocol::commitment::EncryptedNote;
 use mystiko_protocol::error::ProtocolError;
@@ -45,7 +46,7 @@ pub(crate) struct ProofContext {
     pub(crate) sig_wallet: LocalWallet,
 }
 
-impl<F, S, A, C, T, P, R, V, K> Spends<F, S, A, C, T, P, R, V, K>
+impl<F, S, A, C, T, P, R, V, K, X> Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -54,6 +55,7 @@ where
     V: ZKProver<G16Proof>,
     P: Providers + 'static,
     K: DataPackerClient<ChainData, ProtoMerkleTree>,
+    X: Compression + 'static,
     ProtocolError: From<V::Error>,
     SpendsError: From<A::Error> + From<C::Error> + From<V::Error>,
 {
