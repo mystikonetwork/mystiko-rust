@@ -10,6 +10,7 @@ use ethers_providers::Middleware;
 use log::{error, info};
 use mystiko_abi::commitment_pool::CommitmentQueuedFilter;
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
+use mystiko_config::{DepositContractConfig, PoolContractConfig};
 use mystiko_ethers::{Provider, Providers};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
@@ -25,6 +26,7 @@ use mystiko_utils::address::{ethers_address_from_string, ethers_address_to_strin
 use mystiko_utils::convert::{biguint_to_u256, u256_to_biguint};
 use mystiko_utils::hex::encode_hex_with_prefix;
 use mystiko_utils::time::current_timestamp;
+use num_bigint::BigUint;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::str::FromStr;
@@ -74,27 +76,23 @@ where
             self.asset_import_by_chain_transaction(account, provider.clone(), options.chain_id, tx_hash)
                 .await
         });
-        let result = futures::future::try_join_all(tasks).await?;
+        let result = futures::future::join_all(tasks).await;
         Ok(result.into_iter().flatten().collect::<Vec<_>>())
     }
 
-    async fn asset_import_by_chain_transaction(
+    pub(crate) async fn asset_import_by_chain_transaction(
         &self,
         account: &[ScanningAccount],
         provider: Arc<Provider>,
         chain_id: u64,
         tx_hash: &str,
-    ) -> Result<Vec<AssetChainImportResult>, ScannerError> {
-        match self
-            .asset_import_by_transaction_logs(account, provider, chain_id, tx_hash)
+    ) -> Vec<AssetChainImportResult> {
+        self.asset_import_by_transaction_logs(account, provider, chain_id, tx_hash)
             .await
-        {
-            Ok(r) => Ok(r),
-            Err(e) => {
+            .unwrap_or_else(|e| {
                 error!("asset import chain {:?} tx {:?} error: {:?}", chain_id, tx_hash, e);
-                Ok(vec![])
-            }
-        }
+                vec![]
+            })
     }
 
     async fn asset_import_by_transaction_logs(
@@ -236,6 +234,10 @@ where
             .config
             .find_deposit_contract_by_address(peer_chain_id, peer_contract_address)
             .ok_or(anyhow!("peer deposit contract not found"))?;
+        let peer_pool_contract = self
+            .config
+            .find_pool_contract_by_address(peer_chain_id, peer_deposit_contract.pool_contract_address())
+            .ok_or(anyhow!("peer pool contract not found"))?;
         let cross_chain_event = match CommitmentCrossChainFilter::decode_log(&cross_chain_log.into()) {
             Ok(event) => event,
             Err(e) => {
@@ -244,22 +246,32 @@ where
             }
         };
         let commitment_hash = u256_to_biguint(&cross_chain_event.commitment);
-        let peer_pool_contract_str = peer_deposit_contract.pool_contract_address();
-        let peer_pool_contract = ethers_address_from_string(peer_pool_contract_str)?;
+        self.import_asset_by_commitment_hash(peer_chain_id, peer_pool_contract, commitment_hash.clone(), account)
+            .await
+    }
+
+    pub(crate) async fn import_asset_by_commitment_hash(
+        &self,
+        chain_id: u64,
+        pool_contract_cfg: &PoolContractConfig,
+        commitment_hash: BigUint,
+        account: &[ScanningAccount],
+    ) -> Result<Option<AssetChainImportResult>, ScannerError> {
+        let pool_contract = ethers_address_from_string(pool_contract_cfg.address())?;
         let commitments = self
             .sequencer
-            .get_commitments(peer_chain_id, &peer_pool_contract, &[commitment_hash.clone()])
+            .get_commitments(chain_id, &pool_contract, &[commitment_hash.clone()])
             .await
             .map_err(|e| anyhow!("sequencer client error: {}", e))?;
         let commitment_data = commitments.first().ok_or(ScannerError::CommitmentEmptyError)?;
         let found_commitment = Commitment {
-            chain_id: peer_chain_id,
-            contract_address: peer_pool_contract_str.to_string(),
-            bridge_type: BridgeType::from(peer_deposit_contract.bridge_type()).into(),
+            chain_id: chain_id,
+            contract_address: pool_contract_cfg.address().to_string(),
+            bridge_type: BridgeType::from(pool_contract_cfg.bridge_type()).into(),
             commitment_hash,
-            asset_symbol: peer_deposit_contract.asset_symbol().to_string(),
-            asset_decimals: peer_deposit_contract.asset_decimals(),
-            asset_address: peer_deposit_contract.asset_address().map(|s| s.to_string()),
+            asset_symbol: pool_contract_cfg.asset_symbol().to_string(),
+            asset_decimals: pool_contract_cfg.asset_decimals(),
+            asset_address: pool_contract_cfg.asset_address().map(|s| s.to_string()),
             status: commitment_data.status,
             spent: false,
             block_number: commitment_data.block_number,
@@ -278,7 +290,7 @@ where
             included_transaction_hash: commitment_data.included_transaction_hash_as_hex(),
             src_chain_transaction_hash: commitment_data.src_chain_transaction_hash_as_hex(),
         };
-        self.scan_import_commitment(found_commitment, peer_pool_contract, account)
+        self.scan_import_commitment(found_commitment, pool_contract, account)
             .await
     }
 
@@ -297,7 +309,7 @@ where
                     .is_spent_nullifier(
                         IsSpentNullifierOptions::builder()
                             .chain_id(commitment.chain_id)
-                            .contract_address(contract_address)
+                            .contract_address(contract_address.clone())
                             .nullifier(biguint_to_u256(nullifier))
                             .build(),
                     )
