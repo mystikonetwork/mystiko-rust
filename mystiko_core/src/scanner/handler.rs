@@ -10,7 +10,7 @@ use mystiko_config::MystikoConfig;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::scanner::v1::{
     AssetImportOptions, AssetImportResult, AssetsByChain, AssetsOptions, BalanceOptions, BalanceResult, ResetResult,
-    ScanOptions, ScanResult, ScannerResetOptions,
+    ScanOptions, ScanResult, ScannerResetOptions, SyncOptions,
 };
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
@@ -82,6 +82,7 @@ where
 #[async_trait]
 impl<F, S, C, Q, P>
     ScannerHandler<
+        SyncOptions,
         ScanOptions,
         ScanResult,
         ScannerResetOptions,
@@ -102,6 +103,9 @@ where
     ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
+    async fn sync(&self, options: SyncOptions) -> Result<BalanceResult, Self::Error> {
+        self.asset_sync(options).await
+    }
 
     async fn scan(&self, options: ScanOptions) -> Result<ScanResult, Self::Error> {
         self.wallets.check_password(&options.wallet_password).await?;

@@ -1,8 +1,25 @@
 use crate::runtime;
 use mystiko_protos::api::scanner::v1::{
     AssetImportRequest, AssetsRequest, BalanceRequest, ChainAssetsRequest, ScanRequest, ScannerResetRequest,
+    SyncRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, ScannerError};
+
+pub fn sync<M>(message: M) -> ApiResponse
+where
+    M: TryInto<SyncRequest>,
+    <M as TryInto<SyncRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    match message.try_into() {
+        Ok(message) => {
+            if let Some(options) = message.options {
+                return runtime().block_on(internal::sync(options));
+            }
+            ApiResponse::unknown_error("unexpected message")
+        }
+        Err(err) => ApiResponse::error(ScannerError::DeserializeMessageError, err),
+    }
+}
 
 pub fn scan<M>(message: M) -> ApiResponse
 where
@@ -109,8 +126,22 @@ mod internal {
     };
     use mystiko_protos::api::v1::{ApiResponse, ScannerError};
     use mystiko_protos::core::scanner::v1::{
-        AssetImportOptions, AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions,
+        AssetImportOptions, AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions, SyncOptions,
     };
+
+    pub(crate) async fn sync(options: SyncOptions) -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.scanner.sync(options).await;
+                match result {
+                    Ok(balance) => ApiResponse::success(BalanceResponse::builder().result(balance).build()),
+                    Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
+                }
+            }
+            Err(err) => ApiResponse::error(ScannerError::GetMystikoGuardError, err),
+        }
+    }
 
     pub(crate) async fn scan(options: ScanOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;

@@ -5,6 +5,7 @@ mod scanner_scan_bridge_tests;
 mod scanner_scan_import_cross_chain_tests;
 mod scanner_scan_import_tests;
 mod scanner_scan_tests;
+mod scanner_sync_tests;
 
 use crate::common::{create_database, MockProvider, MockProviders};
 use anyhow::Result;
@@ -210,7 +211,6 @@ pub async fn insert_commitments(
                 let pcm = ProtocolCommitment::new(account.shielded_address.clone(), Some(note.clone()), None).unwrap();
                 cm.commitment_hash.clone_from(&pcm.commitment_hash);
                 cm.encrypted_note = Some(encode_hex(pcm.encrypted_note));
-
                 let nullifier = compute_nullifier(&account.v_sk, &pcm.note.random_p).unwrap();
                 nullifiers.push(nullifier);
             }
@@ -264,14 +264,14 @@ fn build_mock_provider_with_queued_event(log_count: u32) -> MockProvider {
                     address: Address::from_str("0x00b73dbC8C370CA7e5F00b778280596383b62929").unwrap(),
                     block_hash: Some(H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap()),
                     block_number: Some(U64::from(10000000)),
-                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d1d254df768aad077345bcca57768ba1df0424264ca8f76a2fab3549b051e5d0339f73f26c5d4f2e0e1e2575829a0a7afeb0a380f67b100b866b0bfbc84713de7b92d622a98cdbec15690d203cc33b428591d8f549ff7e48e44475f14c3d04b4c9c1c16c3c8beac96ae05db6762e01466d49e04422b9d84a7335b798bb7fbccb2b2fe7732bd991c9a29c861b6c48a692da6e02af21b6a0410aedbdf5f4a3094729873d58f42cc59ac41c54a2b7b2b392277ed72a1b7121efc24d039d7830e20e1f3cb60de6e96e33ed7f344962635832c173000000000000000000000000000000").unwrap(),
+                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d145f68f0fa27ca1f76a147f3361bf11910467f90fad56888a31544354b6b2ae4d367da8215769b872e64f7d1aa1a39a025bc62d485baa8124a7ee62dfa6072307d00f823a880ca31d8ecfe61c3a60beccadf95b44cbb22c9696ec8c918514d57b99bf910edaf4a33c0b65500e6d80bee9b564d3f3ed6b267675c588b2e366b180dd815ba1531c8ac5ae4bab228e6b999312641faae4f3bf306d9c6acf88f440f63f02da2f2a62b16679528ba25e6ca4c1d067aa66afed5b6fd2c2eb5c35bcb7db4e3ff7fff54bd72d2b75db73bac3c505f7000000000000000000000000000000").unwrap(),
                     log_index: Some(U256::from(250)),
                     transaction_log_index: None,
                     log_type: None,
                     removed: Some(false),
                     topics: vec![
                         H256::from_str("0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9").unwrap(),
-                        H256::from_str("0x1db84c1b0bd7877f4cddd3f5b0a8ae202b017234f84dc75face85b7556951fc4").unwrap(),
+                        H256::from_str("0x13c386238b4d87f6c8c5a356d09ba44bb5633f80828c6cbd10c6e5f4db1d04b4").unwrap(),
                     ],
                     transaction_hash: Some(H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap()),
                     transaction_index: Some(U64::from(51)),
@@ -280,14 +280,14 @@ fn build_mock_provider_with_queued_event(log_count: u32) -> MockProvider {
                     address: Address::from_str("0x00b73dbC8C370CA7e5F00b778280596383b62929").unwrap(),
                     block_hash: Some(H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap()),
                     block_number: Some(U64::from(10000000)),
-                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000b000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d161e3ffa2a53509de01250f2b8af2e0d50433e50f647361b877918a55745d075c9bbf7aa8a1f41bd3641a606a0cbcd00d459fcf231acafdec6eca9b7aacfd5f67e1b63529a0564e82cdde6754d6b946f5bae36f748e3295276df68b8b19d1d8bccd8105d7feca23c5f6288a78f9f038c5d3594d2ef903fc145b07b203f98796c58a9210a5f7c37e07215f9b1ac273c51688c6b72dad855e7008d81f69c28762b289caf7d93d44b6416f7fce60b53669624a9ec0d3289f2a8ee8b8811661fc73d9ece7376574c15baa8a8b21083aa49f8d54000000000000000000000000000000").unwrap(),
+                    data: Bytes::from_str("0x00000000000000000000000000000000000000000000000000000000000f4240000000000000000000000000000000000000000000000000000000000000000b000000000000000000000000000000000000000000000000000000000000006000000000000000000000000000000000000000000000000000000000000000d15b5ec95547ecfc925b49f2ffc2c96c380403493180be9053fdf7d24db53618f40cf54292773df49dc32f063cfbb7300696bed1e3723a136e944c770ce0c356df474b85ff50c5a7eef4e89fe5ff2f4726af6d06dcee5ce4069a951ffd5ceaba812a401e07fcd6348bad93ff817386c0a92a6ff0a7976c0aefdae5cbc5d010332da98cd8257db3ea2305132abd83591e9532b94ef8e247f5348f5b1e8b74c11c64b8a7036acf9f0593ce0ccf83db8472940ab124a3469b26b6ce38c975ddfde4cce5330b933c4dde221e179b3c2cb5143e0b000000000000000000000000000000").unwrap(),
                     log_index: Some(U256::from(251)),
                     transaction_log_index: None,
                     log_type: None,
                     removed: Some(false),
                     topics: vec![
                         H256::from_str("0xf533f9705aac5020e21695ea3553ac7b6881070d2b6900ab2b1e3050304b5bf9").unwrap(),
-                        H256::from_str("0x18812c5d6d451a1c7396e04aaaed04ddbbe8a3908d3db55a890a9527ba4ea8c3").unwrap(),
+                        H256::from_str("0x18e14d1d2c6bccd2fba7f75aab692e3f41f1de3197fdce351673bf01e4e15e95").unwrap(),
                     ],
                     transaction_hash: Some(H256::from_str("0xa5832c0a90837280d29de8498144c40c295fbf4adae7efc97046c322cb81c1c2").unwrap()),
                     transaction_index: Some(U64::from(51)),

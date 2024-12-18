@@ -315,7 +315,7 @@ async fn test_import_merge_spend_commitment() {
         contract_address: "0x00b73dbC8C370CA7e5F00b778280596383b62929".to_string(),
         bridge_type: BridgeType::Loop as i32,
         commitment_hash: BigUint::parse_bytes(
-            "1db84c1b0bd7877f4cddd3f5b0a8ae202b017234f84dc75face85b7556951fc4".as_bytes(),
+            "13c386238b4d87f6c8c5a356d09ba44bb5633f80828c6cbd10c6e5f4db1d04b4".as_bytes(),
             16,
         )
         .unwrap(),

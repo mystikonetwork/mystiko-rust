@@ -2,6 +2,7 @@ mod error;
 mod handler;
 mod import;
 mod scan;
+mod sync;
 
 pub use error::*;
 pub use handler::*;
@@ -9,8 +10,10 @@ pub use handler::*;
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait ScannerHandler<SO, SR, RO, RR, IO, IR, BO, BR, AO, AR>: Send + Sync {
+pub trait ScannerHandler<YO, SO, SR, RO, RR, IO, IR, BO, BR, AO, AR>: Send + Sync {
     type Error;
+
+    async fn sync(&self, options: YO) -> Result<BR, Self::Error>;
 
     async fn scan(&self, options: SO) -> Result<SR, Self::Error>;
 
