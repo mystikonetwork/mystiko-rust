@@ -103,7 +103,7 @@ where
     ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
-    async fn sync(&self, options: SyncOptions) -> Result<(), Self::Error> {
+    async fn sync(&self, options: SyncOptions) -> Result<BalanceResult, Self::Error> {
         self.asset_sync(options).await
     }
 

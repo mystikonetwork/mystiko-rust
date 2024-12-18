@@ -265,7 +265,7 @@ where
             .map_err(|e| anyhow!("sequencer client error: {}", e))?;
         let commitment_data = commitments.first().ok_or(ScannerError::CommitmentEmptyError)?;
         let found_commitment = Commitment {
-            chain_id: chain_id,
+            chain_id,
             contract_address: pool_contract_cfg.address().to_string(),
             bridge_type: BridgeType::from(pool_contract_cfg.bridge_type()).into(),
             commitment_hash,
@@ -309,12 +309,12 @@ where
                     .is_spent_nullifier(
                         IsSpentNullifierOptions::builder()
                             .chain_id(commitment.chain_id)
-                            .contract_address(contract_address.clone())
+                            .contract_address(contract_address)
                             .nullifier(biguint_to_u256(nullifier))
                             .build(),
                     )
-                    .await?;
-                if spend {
+                    .await;
+                if let Ok(true) = spend {
                     commitment.status = CommitmentStatus::Included as i32;
                     commitment.spent = true;
                 }
@@ -338,7 +338,7 @@ where
         }
     }
 
-    async fn update_or_insert_commitment(&self, commitment: Commitment) -> Result<(), ScannerError> {
+    pub(crate) async fn update_or_insert_commitment(&self, commitment: Commitment) -> Result<(), ScannerError> {
         let conditions = Condition::and(vec![
             SubFilter::equal(CommitmentColumn::ChainId, commitment.chain_id),
             SubFilter::equal(CommitmentColumn::ContractAddress, commitment.contract_address.clone()),
@@ -360,7 +360,7 @@ where
     }
 }
 
-pub fn merge_commitments(commitment1: Commitment, commitment2: Commitment) -> Commitment {
+pub(crate) fn merge_commitments(commitment1: Commitment, commitment2: Commitment) -> Commitment {
     let (first, last) = match commitment1.block_number.cmp(&commitment2.block_number) {
         Ordering::Less => (commitment1, commitment2),
         Ordering::Equal => match commitment1.status.cmp(&commitment2.status) {

@@ -13,7 +13,7 @@ use async_trait::async_trait;
 pub trait ScannerHandler<YO, SO, SR, RO, RR, IO, IR, BO, BR, AO, AR>: Send + Sync {
     type Error;
 
-    async fn sync(&self, options: YO) -> Result<(), Self::Error>;
+    async fn sync(&self, options: YO) -> Result<BR, Self::Error>;
 
     async fn scan(&self, options: SO) -> Result<SR, Self::Error>;
 
