@@ -364,8 +364,8 @@ pub(crate) fn merge_commitments(commitment1: Commitment, commitment2: Commitment
     let (first, last) = match commitment1.block_number.cmp(&commitment2.block_number) {
         Ordering::Less => (commitment1, commitment2),
         Ordering::Equal => match commitment1.status.cmp(&commitment2.status) {
-            Ordering::Less => (commitment1, commitment2),
-            _ => (commitment2, commitment1),
+            Ordering::Greater => (commitment2, commitment1),
+            _ => (commitment1, commitment2),
         },
         Ordering::Greater => (commitment2, commitment1),
     };

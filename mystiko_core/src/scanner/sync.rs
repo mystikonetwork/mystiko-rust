@@ -43,18 +43,16 @@ where
         for cm in cms.into_iter() {
             let cm_data = &cm.data;
             if cm_data.leaf_index.is_none() {
-                if cm_data.leaf_index.is_none() {
-                    if let Some(queued_transaction_hash) = cm_data.queued_transaction_hash.clone() {
-                        cms_from_provider.insert(
-                            ImportFromProviderKey::builder()
-                                .chain_id(cm_data.chain_id)
-                                .queued_transaction_hash(queued_transaction_hash)
-                                .build(),
-                            cm,
-                        );
-                    } else {
-                        cms_by_hash.push(cm);
-                    }
+                if let Some(queued_transaction_hash) = cm_data.queued_transaction_hash.clone() {
+                    cms_from_provider.insert(
+                        ImportFromProviderKey::builder()
+                            .chain_id(cm_data.chain_id)
+                            .queued_transaction_hash(queued_transaction_hash)
+                            .build(),
+                        cm,
+                    );
+                } else {
+                    cms_by_hash.push(cm);
                 }
             } else {
                 cms_to_update.push(cm);
