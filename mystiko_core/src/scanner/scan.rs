@@ -660,12 +660,10 @@ pub(crate) fn calc_balance_details(
 }
 
 fn calc_asset_total_balance(commitments: &[CommitmentWithPoolVersion]) -> Result<f64, ScannerError> {
-    commitments.iter().try_fold(0f64, |mut total_balance, cm| {
-        let amount = decimal_to_number::<f64, BigUint>(
-            cm.commitment.data.amount.as_ref().unwrap_or(&BigUint::default()),
-            Some(cm.commitment.data.asset_decimals),
-        )?;
-        total_balance += amount;
-        Ok::<f64, ScannerError>(total_balance)
-    })
+    let asset_decimals = commitments.first().map(|cm| cm.commitment.data.asset_decimals);
+    let total_amount: BigUint = commitments
+        .iter()
+        .map(|cm| cm.commitment.data.amount.clone().unwrap_or_default())
+        .sum();
+    Ok(decimal_to_number::<f64, BigUint>(&total_amount, asset_decimals)?)
 }
