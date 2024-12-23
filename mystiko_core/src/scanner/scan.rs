@@ -13,7 +13,7 @@ use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::scanner::v1::{
     AssetsByBridge, AssetsByChain, AssetsBySymbol, AssetsByVersion, AssetsOptions, Balance, BalanceOptions,
-    ScanOptions, ScanResult,
+    ScannerScanOptions, ScannerScanResult,
 };
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
@@ -63,7 +63,7 @@ pub(crate) struct ScanRoundOptions {
 
 impl ScanRoundOptions {
     pub(crate) fn split_rounds(
-        options: &ScanOptions,
+        options: &ScannerScanOptions,
         cms_count: &u64,
         scanning_accounts: Arc<Vec<ScanningAccount>>,
     ) -> Vec<Self> {
@@ -225,8 +225,8 @@ where
         &self,
         accounts: &[Document<Account>],
         scanned_id: Option<String>,
-    ) -> ScanResult {
-        ScanResult::builder()
+    ) -> ScannerScanResult {
+        ScannerScanResult::builder()
             .scanned_shielded_addresses(
                 accounts
                     .iter()

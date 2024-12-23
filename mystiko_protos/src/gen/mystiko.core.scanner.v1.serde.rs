@@ -1448,376 +1448,6 @@ impl<'de> serde::Deserialize<'de> for BalanceResult {
         deserializer.deserialize_struct("mystiko.core.scanner.v1.BalanceResult", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ResetResult {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let len = 0;
-        let struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ResetResult", len)?;
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for ResetResult {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                            Err(serde::de::Error::unknown_field(value, FIELDS))
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ResetResult;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.scanner.v1.ResetResult")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ResetResult, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                while map.next_key::<GeneratedField>()?.is_some() {
-                    let _ = map.next_value::<serde::de::IgnoredAny>()?;
-                }
-                Ok(ResetResult {
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.core.scanner.v1.ResetResult", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for ScanOptions {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if !self.wallet_password.is_empty() {
-            len += 1;
-        }
-        if self.batch_size.is_some() {
-            len += 1;
-        }
-        if self.concurrency.is_some() {
-            len += 1;
-        }
-        if !self.shielded_addresses.is_empty() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScanOptions", len)?;
-        if !self.wallet_password.is_empty() {
-            struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
-        }
-        if let Some(v) = self.batch_size.as_ref() {
-            struct_ser.serialize_field("batchSize", ToString::to_string(&v).as_str())?;
-        }
-        if let Some(v) = self.concurrency.as_ref() {
-            struct_ser.serialize_field("concurrency", v)?;
-        }
-        if !self.shielded_addresses.is_empty() {
-            struct_ser.serialize_field("shieldedAddresses", &self.shielded_addresses)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for ScanOptions {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "wallet_password",
-            "walletPassword",
-            "batch_size",
-            "batchSize",
-            "concurrency",
-            "shielded_addresses",
-            "shieldedAddresses",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            WalletPassword,
-            BatchSize,
-            Concurrency,
-            ShieldedAddresses,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
-                            "batchSize" | "batch_size" => Ok(GeneratedField::BatchSize),
-                            "concurrency" => Ok(GeneratedField::Concurrency),
-                            "shieldedAddresses" | "shielded_addresses" => Ok(GeneratedField::ShieldedAddresses),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ScanOptions;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.scanner.v1.ScanOptions")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScanOptions, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut wallet_password__ = None;
-                let mut batch_size__ = None;
-                let mut concurrency__ = None;
-                let mut shielded_addresses__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::WalletPassword => {
-                            if wallet_password__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("walletPassword"));
-                            }
-                            wallet_password__ = Some(map.next_value()?);
-                        }
-                        GeneratedField::BatchSize => {
-                            if batch_size__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("batchSize"));
-                            }
-                            batch_size__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
-                        GeneratedField::Concurrency => {
-                            if concurrency__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("concurrency"));
-                            }
-                            concurrency__ = 
-                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
-                            ;
-                        }
-                        GeneratedField::ShieldedAddresses => {
-                            if shielded_addresses__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("shieldedAddresses"));
-                            }
-                            shielded_addresses__ = Some(map.next_value()?);
-                        }
-                    }
-                }
-                Ok(ScanOptions {
-                    wallet_password: wallet_password__.unwrap_or_default(),
-                    batch_size: batch_size__,
-                    concurrency: concurrency__,
-                    shielded_addresses: shielded_addresses__.unwrap_or_default(),
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScanOptions", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for ScanResult {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.total_count != 0 {
-            len += 1;
-        }
-        if self.owned_count != 0 {
-            len += 1;
-        }
-        if !self.scanned_shielded_addresses.is_empty() {
-            len += 1;
-        }
-        if self.to_id.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScanResult", len)?;
-        if self.total_count != 0 {
-            struct_ser.serialize_field("totalCount", ToString::to_string(&self.total_count).as_str())?;
-        }
-        if self.owned_count != 0 {
-            struct_ser.serialize_field("ownedCount", ToString::to_string(&self.owned_count).as_str())?;
-        }
-        if !self.scanned_shielded_addresses.is_empty() {
-            struct_ser.serialize_field("scannedShieldedAddresses", &self.scanned_shielded_addresses)?;
-        }
-        if let Some(v) = self.to_id.as_ref() {
-            struct_ser.serialize_field("toId", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for ScanResult {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "total_count",
-            "totalCount",
-            "owned_count",
-            "ownedCount",
-            "scanned_shielded_addresses",
-            "scannedShieldedAddresses",
-            "to_id",
-            "toId",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            TotalCount,
-            OwnedCount,
-            ScannedShieldedAddresses,
-            ToId,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "totalCount" | "total_count" => Ok(GeneratedField::TotalCount),
-                            "ownedCount" | "owned_count" => Ok(GeneratedField::OwnedCount),
-                            "scannedShieldedAddresses" | "scanned_shielded_addresses" => Ok(GeneratedField::ScannedShieldedAddresses),
-                            "toId" | "to_id" => Ok(GeneratedField::ToId),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ScanResult;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.scanner.v1.ScanResult")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScanResult, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut total_count__ = None;
-                let mut owned_count__ = None;
-                let mut scanned_shielded_addresses__ = None;
-                let mut to_id__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::TotalCount => {
-                            if total_count__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("totalCount"));
-                            }
-                            total_count__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::OwnedCount => {
-                            if owned_count__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("ownedCount"));
-                            }
-                            owned_count__ = 
-                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
-                            ;
-                        }
-                        GeneratedField::ScannedShieldedAddresses => {
-                            if scanned_shielded_addresses__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("scannedShieldedAddresses"));
-                            }
-                            scanned_shielded_addresses__ = Some(map.next_value()?);
-                        }
-                        GeneratedField::ToId => {
-                            if to_id__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("toId"));
-                            }
-                            to_id__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(ScanResult {
-                    total_count: total_count__.unwrap_or_default(),
-                    owned_count: owned_count__.unwrap_or_default(),
-                    scanned_shielded_addresses: scanned_shielded_addresses__.unwrap_or_default(),
-                    to_id: to_id__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScanResult", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for ScannerResetOptions {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -1928,7 +1558,377 @@ impl<'de> serde::Deserialize<'de> for ScannerResetOptions {
         deserializer.deserialize_struct("mystiko.core.scanner.v1.ScannerResetOptions", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for SyncOptions {
+impl serde::Serialize for ScannerResetResult {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let len = 0;
+        let struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScannerResetResult", len)?;
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerResetResult {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                            Err(serde::de::Error::unknown_field(value, FIELDS))
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerResetResult;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.ScannerResetResult")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerResetResult, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                while map.next_key::<GeneratedField>()?.is_some() {
+                    let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                }
+                Ok(ScannerResetResult {
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScannerResetResult", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerScanOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.wallet_password.is_empty() {
+            len += 1;
+        }
+        if self.batch_size.is_some() {
+            len += 1;
+        }
+        if self.concurrency.is_some() {
+            len += 1;
+        }
+        if !self.shielded_addresses.is_empty() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScannerScanOptions", len)?;
+        if !self.wallet_password.is_empty() {
+            struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
+        }
+        if let Some(v) = self.batch_size.as_ref() {
+            struct_ser.serialize_field("batchSize", ToString::to_string(&v).as_str())?;
+        }
+        if let Some(v) = self.concurrency.as_ref() {
+            struct_ser.serialize_field("concurrency", v)?;
+        }
+        if !self.shielded_addresses.is_empty() {
+            struct_ser.serialize_field("shieldedAddresses", &self.shielded_addresses)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerScanOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "wallet_password",
+            "walletPassword",
+            "batch_size",
+            "batchSize",
+            "concurrency",
+            "shielded_addresses",
+            "shieldedAddresses",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            WalletPassword,
+            BatchSize,
+            Concurrency,
+            ShieldedAddresses,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "walletPassword" | "wallet_password" => Ok(GeneratedField::WalletPassword),
+                            "batchSize" | "batch_size" => Ok(GeneratedField::BatchSize),
+                            "concurrency" => Ok(GeneratedField::Concurrency),
+                            "shieldedAddresses" | "shielded_addresses" => Ok(GeneratedField::ShieldedAddresses),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerScanOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.ScannerScanOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerScanOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut wallet_password__ = None;
+                let mut batch_size__ = None;
+                let mut concurrency__ = None;
+                let mut shielded_addresses__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::WalletPassword => {
+                            if wallet_password__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("walletPassword"));
+                            }
+                            wallet_password__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::BatchSize => {
+                            if batch_size__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("batchSize"));
+                            }
+                            batch_size__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::Concurrency => {
+                            if concurrency__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("concurrency"));
+                            }
+                            concurrency__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::ShieldedAddresses => {
+                            if shielded_addresses__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("shieldedAddresses"));
+                            }
+                            shielded_addresses__ = Some(map.next_value()?);
+                        }
+                    }
+                }
+                Ok(ScannerScanOptions {
+                    wallet_password: wallet_password__.unwrap_or_default(),
+                    batch_size: batch_size__,
+                    concurrency: concurrency__,
+                    shielded_addresses: shielded_addresses__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScannerScanOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerScanResult {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.total_count != 0 {
+            len += 1;
+        }
+        if self.owned_count != 0 {
+            len += 1;
+        }
+        if !self.scanned_shielded_addresses.is_empty() {
+            len += 1;
+        }
+        if self.to_id.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScannerScanResult", len)?;
+        if self.total_count != 0 {
+            struct_ser.serialize_field("totalCount", ToString::to_string(&self.total_count).as_str())?;
+        }
+        if self.owned_count != 0 {
+            struct_ser.serialize_field("ownedCount", ToString::to_string(&self.owned_count).as_str())?;
+        }
+        if !self.scanned_shielded_addresses.is_empty() {
+            struct_ser.serialize_field("scannedShieldedAddresses", &self.scanned_shielded_addresses)?;
+        }
+        if let Some(v) = self.to_id.as_ref() {
+            struct_ser.serialize_field("toId", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerScanResult {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "total_count",
+            "totalCount",
+            "owned_count",
+            "ownedCount",
+            "scanned_shielded_addresses",
+            "scannedShieldedAddresses",
+            "to_id",
+            "toId",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            TotalCount,
+            OwnedCount,
+            ScannedShieldedAddresses,
+            ToId,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "totalCount" | "total_count" => Ok(GeneratedField::TotalCount),
+                            "ownedCount" | "owned_count" => Ok(GeneratedField::OwnedCount),
+                            "scannedShieldedAddresses" | "scanned_shielded_addresses" => Ok(GeneratedField::ScannedShieldedAddresses),
+                            "toId" | "to_id" => Ok(GeneratedField::ToId),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerScanResult;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.scanner.v1.ScannerScanResult")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerScanResult, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut total_count__ = None;
+                let mut owned_count__ = None;
+                let mut scanned_shielded_addresses__ = None;
+                let mut to_id__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::TotalCount => {
+                            if total_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("totalCount"));
+                            }
+                            total_count__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::OwnedCount => {
+                            if owned_count__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("ownedCount"));
+                            }
+                            owned_count__ = 
+                                Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
+                            ;
+                        }
+                        GeneratedField::ScannedShieldedAddresses => {
+                            if scanned_shielded_addresses__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("scannedShieldedAddresses"));
+                            }
+                            scanned_shielded_addresses__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::ToId => {
+                            if to_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("toId"));
+                            }
+                            to_id__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ScannerScanResult {
+                    total_count: total_count__.unwrap_or_default(),
+                    owned_count: owned_count__.unwrap_or_default(),
+                    scanned_shielded_addresses: scanned_shielded_addresses__.unwrap_or_default(),
+                    to_id: to_id__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScannerScanResult", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerSyncOptions {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -1942,7 +1942,7 @@ impl serde::Serialize for SyncOptions {
         if self.concurrency.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.SyncOptions", len)?;
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.scanner.v1.ScannerSyncOptions", len)?;
         if !self.wallet_password.is_empty() {
             struct_ser.serialize_field("walletPassword", &self.wallet_password)?;
         }
@@ -1952,7 +1952,7 @@ impl serde::Serialize for SyncOptions {
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for SyncOptions {
+impl<'de> serde::Deserialize<'de> for ScannerSyncOptions {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -2000,13 +2000,13 @@ impl<'de> serde::Deserialize<'de> for SyncOptions {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = SyncOptions;
+            type Value = ScannerSyncOptions;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.core.scanner.v1.SyncOptions")
+                formatter.write_str("struct mystiko.core.scanner.v1.ScannerSyncOptions")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<SyncOptions, V::Error>
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerSyncOptions, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -2030,12 +2030,12 @@ impl<'de> serde::Deserialize<'de> for SyncOptions {
                         }
                     }
                 }
-                Ok(SyncOptions {
+                Ok(ScannerSyncOptions {
                     wallet_password: wallet_password__.unwrap_or_default(),
                     concurrency: concurrency__,
                 })
             }
         }
-        deserializer.deserialize_struct("mystiko.core.scanner.v1.SyncOptions", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("mystiko.core.scanner.v1.ScannerSyncOptions", FIELDS, GeneratedVisitor)
     }
 }

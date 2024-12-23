@@ -18,7 +18,7 @@ use mystiko_dataloader::validator::rule::{
 use mystiko_dataloader::{loader::ResetOptions as DataLoaderResetOptions, DataLoaderError};
 use mystiko_ethers::Providers;
 use mystiko_protos::core::synchronizer::v1::{
-    ChainStatus, ContractStatus, SyncOptions, SynchronizerResetOptions, SynchronizerStatus,
+    ChainStatus, ContractStatus, SynchronizerResetOptions, SynchronizerStatus, SynchronizerSyncOptions,
 };
 use mystiko_protos::loader::v1::{
     FetcherConfig, LoaderConfig, PackerFetcherConfig, ProviderFetcherChainConfig, ProviderFetcherConfig,
@@ -63,7 +63,7 @@ pub enum SynchronizerError {
 }
 
 #[async_trait]
-impl<L> SynchronizerHandler<SyncOptions, SynchronizerStatus, SynchronizerResetOptions> for Synchronizer<L>
+impl<L> SynchronizerHandler<SynchronizerSyncOptions, SynchronizerStatus, SynchronizerResetOptions> for Synchronizer<L>
 where
     L: DataLoader,
 {
@@ -97,7 +97,7 @@ where
         Ok(SynchronizerStatus::builder().chains(chains).build())
     }
 
-    async fn sync(&self, sync_option: SyncOptions) -> Result<SynchronizerStatus, Self::Error> {
+    async fn sync(&self, sync_option: SynchronizerSyncOptions) -> Result<SynchronizerStatus, Self::Error> {
         let chains = if sync_option.chain_ids.is_empty() {
             self.loaders.keys().copied().collect::<Vec<_>>()
         } else {
@@ -256,7 +256,11 @@ where
         Ok(contract_status)
     }
 
-    async fn chain_sync(&self, loader: &L, sync_option: &SyncOptions) -> Result<ChainStatus, SynchronizerError> {
+    async fn chain_sync(
+        &self,
+        loader: &L,
+        sync_option: &SynchronizerSyncOptions,
+    ) -> Result<ChainStatus, SynchronizerError> {
         let load_option = self.build_load_option(sync_option);
         let result = loader.load(load_option).await?;
         Ok(ChainStatus::builder()
@@ -266,7 +270,7 @@ where
             .build())
     }
 
-    fn build_load_option(&self, sync_option: &SyncOptions) -> LoadOption {
+    fn build_load_option(&self, sync_option: &SynchronizerSyncOptions) -> LoadOption {
         let fetcher_option = self.build_load_fetcher_option(sync_option);
         let validator_option = self.build_load_validator_option(sync_option);
         LoadOption::builder()
@@ -275,7 +279,7 @@ where
             .build()
     }
 
-    fn build_load_fetcher_option(&self, sync_option: &SyncOptions) -> LoadFetcherOption {
+    fn build_load_fetcher_option(&self, sync_option: &SynchronizerSyncOptions) -> LoadFetcherOption {
         let packer_fetcher_option = LoadFetcherSkipOption::builder()
             .skip_fetch(sync_option.disable_datapacker_fetcher)
             .skip_validation(sync_option.enable_datapacker_fetcher_validate.map(|enabled| !enabled))
@@ -304,7 +308,7 @@ where
         options
     }
 
-    fn build_load_validator_option(&self, sync_option: &SyncOptions) -> LoadValidatorOption {
+    fn build_load_validator_option(&self, sync_option: &SynchronizerSyncOptions) -> LoadValidatorOption {
         let mut skip_checkers = HashMap::new();
         if let Some(disabled) = sync_option.disable_rule_validator_integrity_check {
             skip_checkers.insert(RULE_INTEGRITY_CHECKER_NAME.to_string(), disabled);

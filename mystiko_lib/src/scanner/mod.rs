@@ -1,14 +1,14 @@
 use crate::runtime;
 use mystiko_protos::api::scanner::v1::{
-    AssetImportRequest, AssetsRequest, BalanceRequest, ChainAssetsRequest, ScanRequest, ScannerResetRequest,
-    SyncRequest,
+    AssetsRequest, BalanceRequest, ChainAssetsRequest, ScannerAssetImportRequest, ScannerResetRequest,
+    ScannerScanRequest, ScannerSyncRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, ScannerError};
 
 pub fn sync<M>(message: M) -> ApiResponse
 where
-    M: TryInto<SyncRequest>,
-    <M as TryInto<SyncRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<ScannerSyncRequest>,
+    <M as TryInto<ScannerSyncRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -23,8 +23,8 @@ where
 
 pub fn scan<M>(message: M) -> ApiResponse
 where
-    M: TryInto<ScanRequest>,
-    <M as TryInto<ScanRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<ScannerScanRequest>,
+    <M as TryInto<ScannerScanRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -55,8 +55,8 @@ where
 
 pub fn import<M>(message: M) -> ApiResponse
 where
-    M: TryInto<AssetImportRequest>,
-    <M as TryInto<AssetImportRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<ScannerAssetImportRequest>,
+    <M as TryInto<ScannerAssetImportRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -122,14 +122,15 @@ mod internal {
     use crate::instance;
     use mystiko_core::ScannerHandler;
     use mystiko_protos::api::scanner::v1::{
-        AssetImportResponse, AssetsResponse, BalanceResponse, ChainAssetsResponse, ResetResponse, ScanResponse,
+        AssetsResponse, BalanceResponse, ChainAssetsResponse, ScannerAssetImportResponse, ScannerResetResponse,
+        ScannerScanResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, ScannerError};
     use mystiko_protos::core::scanner::v1::{
-        AssetImportOptions, AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions, SyncOptions,
+        AssetImportOptions, AssetsOptions, BalanceOptions, ScannerResetOptions, ScannerScanOptions, ScannerSyncOptions,
     };
 
-    pub(crate) async fn sync(options: SyncOptions) -> ApiResponse {
+    pub(crate) async fn sync(options: ScannerSyncOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
@@ -143,13 +144,13 @@ mod internal {
         }
     }
 
-    pub(crate) async fn scan(options: ScanOptions) -> ApiResponse {
+    pub(crate) async fn scan(options: ScannerScanOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
                 let result = mystiko.scanner.scan(options).await;
                 match result {
-                    Ok(scan) => ApiResponse::success(ScanResponse::builder().result(scan).build()),
+                    Ok(scan) => ApiResponse::success(ScannerScanResponse::builder().result(scan).build()),
                     Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
                 }
             }
@@ -163,7 +164,7 @@ mod internal {
             Ok(mystiko) => {
                 let result = mystiko.scanner.reset(options).await;
                 match result {
-                    Ok(reset) => ApiResponse::success(ResetResponse::builder().result(reset).build()),
+                    Ok(reset) => ApiResponse::success(ScannerResetResponse::builder().result(reset).build()),
                     Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
                 }
             }
@@ -177,7 +178,7 @@ mod internal {
             Ok(mystiko) => {
                 let result = mystiko.scanner.import(options).await;
                 match result {
-                    Ok(asset) => ApiResponse::success(AssetImportResponse::builder().result(asset).build()),
+                    Ok(asset) => ApiResponse::success(ScannerAssetImportResponse::builder().result(asset).build()),
                     Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
                 }
             }

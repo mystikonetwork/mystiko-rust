@@ -4,7 +4,7 @@ use crate::scanner::{
 };
 use ethers_core::types::U256;
 use mystiko_core::ScannerHandler;
-use mystiko_protos::core::scanner::v1::{BalanceOptions, SyncOptions};
+use mystiko_protos::core::scanner::v1::{BalanceOptions, ScannerSyncOptions};
 use mystiko_protos::data::v1::Commitment as ProtosCommitment;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::{biguint_to_bytes, decimal_to_number};
@@ -58,7 +58,7 @@ async fn test_sync_commitment_from_provider() {
     let result = scanner.balance(BalanceOptions::builder().build()).await.unwrap();
     assert_eq!(result.balances.len(), 0);
 
-    let options = SyncOptions::builder()
+    let options = ScannerSyncOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let result = scanner.sync(options).await.unwrap();
@@ -130,7 +130,7 @@ async fn test_sync_commitment_by_commitment_hash() {
     let result = scanner.balance(BalanceOptions::builder().build()).await.unwrap();
     assert_eq!(result.balances.len(), 0);
 
-    let options = SyncOptions::builder()
+    let options = ScannerSyncOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let result = scanner.sync(options).await.unwrap();
@@ -189,7 +189,7 @@ async fn test_sync_commitment_status() {
     assert_eq!(result.balances[0].unspent, 0.0);
     assert_eq!(result.balances[0].spent, None);
 
-    let options = SyncOptions::builder()
+    let options = ScannerSyncOptions::builder()
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let result = scanner.sync(options).await.unwrap();
