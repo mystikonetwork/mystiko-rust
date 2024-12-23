@@ -10,7 +10,7 @@ use mystiko_dataloader::validator::rule::{
     RULE_VALIDATOR_NAME,
 };
 use mystiko_dataloader::DataLoaderError;
-use mystiko_protos::core::synchronizer::v1::{ChainStatus, SyncOptions};
+use mystiko_protos::core::synchronizer::v1::{ChainStatus, SynchronizerSyncOptions};
 use std::collections::HashMap;
 
 #[tokio::test]
@@ -28,7 +28,7 @@ async fn test_chain_synced_with_default_options() {
         .withf(move |options| load_options_compare(options, &expected_load_options))
         .returning(move |_| Ok(load_status));
     let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-    let sync_options = SyncOptions::builder().build();
+    let sync_options = SynchronizerSyncOptions::builder().build();
     let result = synchronizer.sync(sync_options).await.unwrap();
     assert_eq!(result.chains.len(), 1);
     assert_eq!(
@@ -59,7 +59,7 @@ async fn test_chain_synced_with_changed_options() {
         .withf(move |options| load_options_compare(options, &expected_load_options))
         .returning(move |_| Ok(load_status));
     let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-    let mut sync_options = SyncOptions::builder().build();
+    let mut sync_options = SynchronizerSyncOptions::builder().build();
     sync_options.fetcher_query_loaded_block_timeout_ms = Some(1000);
     sync_options.fetcher_fetch_timeout_ms = Some(2000);
     sync_options.validator_validate_concurrency = Some(300);
@@ -80,7 +80,7 @@ async fn test_chain_synced_with_two_loader() {
     let loader1 = MockSyncDataLoader::new();
     let loader2 = MockSyncDataLoader::new();
     let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
-    let mut sync_options = SyncOptions::builder().build();
+    let mut sync_options = SynchronizerSyncOptions::builder().build();
     sync_options.chain_ids = vec![1, 999999];
     let result = synchronizer.sync(sync_options).await;
     assert!(matches!(
@@ -111,7 +111,7 @@ async fn test_chain_synced_with_two_loader() {
         .withf(move |options| load_options_compare(options, &expected_load_options2))
         .returning(move |_| Ok(load_status2));
     let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
-    let mut sync_options = SyncOptions::builder().build();
+    let mut sync_options = SynchronizerSyncOptions::builder().build();
     sync_options.chain_ids = vec![1_u64, 2_u64];
     let result = synchronizer.sync(sync_options).await.unwrap();
     assert_eq!(result.chains.len(), 2);
@@ -159,7 +159,7 @@ async fn test_chain_synced_with_two_loader() {
         .expect_load::<LoadOption>()
         .returning(move |_| Err(DataLoaderError::LoaderNoContractsError));
     let synchronizer = create_synchronizer(1, vec![loader1, loader2]).await;
-    let mut sync_options = SyncOptions::builder().build();
+    let mut sync_options = SynchronizerSyncOptions::builder().build();
     sync_options.chain_ids = vec![1_u64, 2_u64];
     let result = synchronizer.sync(sync_options).await;
     assert!(matches!(result.err().unwrap(), SynchronizerError::DataLoaderError(_)));
@@ -189,7 +189,7 @@ async fn test_chain_synced_with_packer_disabled_options() {
             .withf(move |options| load_options_compare(options, &expected_load_options))
             .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-        let mut sync_options = SyncOptions::builder().build();
+        let mut sync_options = SynchronizerSyncOptions::builder().build();
         sync_options.disable_datapacker_fetcher = Some(status);
         sync_options.enable_datapacker_fetcher_validate = Some(status);
         let result = synchronizer.sync(sync_options).await.unwrap();
@@ -229,7 +229,7 @@ async fn test_chain_synced_with_sequencer_disabled_options() {
             .withf(move |options| load_options_compare(options, &expected_load_options))
             .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-        let mut sync_options = SyncOptions::builder().build();
+        let mut sync_options = SynchronizerSyncOptions::builder().build();
         sync_options.disable_sequencer_fetcher = Some(status);
         sync_options.enable_sequencer_fetcher_validate = Some(status);
         let result = synchronizer.sync(sync_options).await.unwrap();
@@ -269,7 +269,7 @@ async fn test_chain_synced_with_provider_disabled_options() {
             .withf(move |options| load_options_compare(options, &expected_load_options))
             .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-        let mut sync_options = SyncOptions::builder().build();
+        let mut sync_options = SynchronizerSyncOptions::builder().build();
         sync_options.disable_provider_fetcher = Some(status);
         sync_options.disable_provider_fetcher_validate = Some(status);
         let result = synchronizer.sync(sync_options).await.unwrap();
@@ -308,7 +308,7 @@ async fn test_chain_synced_with_rule_validator_disabled_options() {
             .withf(move |options| load_options_compare(options, &expected_load_options))
             .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-        let mut sync_options = SyncOptions::builder().build();
+        let mut sync_options = SynchronizerSyncOptions::builder().build();
         sync_options.disable_rule_validator = Some(status);
         let result = synchronizer.sync(sync_options).await.unwrap();
         assert_eq!(result.chains.len(), 1);
@@ -357,7 +357,7 @@ async fn test_chain_synced_with_checker_disabled_options() {
             .withf(move |options| load_options_compare(options, &expected_load_options))
             .returning(move |_| Ok(load_status));
         let synchronizer = create_synchronizer(chain_id, vec![loader]).await;
-        let mut sync_options = SyncOptions::builder().build();
+        let mut sync_options = SynchronizerSyncOptions::builder().build();
         sync_options.disable_rule_validator_counter_check = Some(status);
         sync_options.disable_rule_validator_sequence_check = Some(status);
         sync_options.disable_rule_validator_integrity_check = Some(status);

@@ -2,11 +2,11 @@ use crate::{extract_data, setup};
 use mystiko_lib::synchronizer;
 use mystiko_protos::api::synchronizer::v1::{
     ChainSyncedBlockRequest, ChainSyncedBlockResponse, ContractSyncedBlockRequest, ContractSyncedBlockResponse,
-    StatusRequest, StatusResponse, SyncRequest, SynchronizerResetRequest,
+    SynchronizerResetRequest, SynchronizerStatusRequest, SynchronizerStatusResponse, SynchronizerSyncRequest,
 };
 use mystiko_protos::api::v1::status_code::Error;
 use mystiko_protos::api::v1::SynchronizerError;
-use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerResetOptions};
+use mystiko_protos::core::synchronizer::v1::{SynchronizerResetOptions, SynchronizerSyncOptions};
 use serial_test::serial;
 
 #[test]
@@ -50,9 +50,9 @@ fn test_contract_synced_block() {
 #[serial]
 fn test_status() {
     setup(None);
-    let response = synchronizer::status(StatusRequest::builder().with_contracts(false).build());
+    let response = synchronizer::status(SynchronizerStatusRequest::builder().with_contracts(false).build());
     assert!(response.code.unwrap().success);
-    let status = StatusResponse::try_from(extract_data(response.result.unwrap()))
+    let status = SynchronizerStatusResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .status
         .unwrap();
@@ -64,9 +64,9 @@ fn test_status() {
     assert_eq!(chains[1].chain_id, 97);
     assert_eq!(chains[1].contracts.len(), 0);
 
-    let response = synchronizer::status(StatusRequest::builder().with_contracts(true).build());
+    let response = synchronizer::status(SynchronizerStatusRequest::builder().with_contracts(true).build());
     assert!(response.code.unwrap().success);
-    let status = StatusResponse::try_from(extract_data(response.result.unwrap()))
+    let status = SynchronizerStatusResponse::try_from(extract_data(response.result.unwrap()))
         .unwrap()
         .status
         .unwrap();
@@ -92,11 +92,11 @@ fn test_status() {
 #[ignore]
 fn test_sync() {
     setup(None);
-    let mut sync_options = SyncOptions::builder().build();
+    let mut sync_options = SynchronizerSyncOptions::builder().build();
     sync_options.fetcher_query_loaded_block_timeout_ms = Some(1000);
     sync_options.fetcher_fetch_timeout_ms = Some(2000);
     sync_options.validator_validate_concurrency = Some(300);
-    let response = synchronizer::sync(SyncRequest::builder().options(sync_options).build());
+    let response = synchronizer::sync(SynchronizerSyncRequest::builder().options(sync_options).build());
     assert!(response.code.unwrap().success);
 }
 

@@ -6,7 +6,7 @@ use crate::{
 use anyhow::anyhow;
 use log::error;
 use mystiko_ethers::Providers;
-use mystiko_protos::core::scanner::v1::{BalanceOptions, BalanceResult, SyncOptions};
+use mystiko_protos::core::scanner::v1::{BalanceOptions, BalanceResult, ScannerSyncOptions};
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, CommitmentStatus, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
@@ -32,7 +32,7 @@ where
     P: Providers + 'static,
     ScannerError: From<C::Error>,
 {
-    pub(crate) async fn asset_sync(&self, options: SyncOptions) -> Result<BalanceResult, ScannerError> {
+    pub(crate) async fn asset_sync(&self, options: ScannerSyncOptions) -> Result<BalanceResult, ScannerError> {
         self.wallets.check_password(&options.wallet_password).await?;
         let accounts = self.build_filter_accounts(&[]).await?;
         let scan_accounts = self.build_scan_accounts(&accounts, &options.wallet_password).await?;
@@ -109,7 +109,7 @@ where
 
     async fn sync_commitments_from_provider(
         &self,
-        options: &SyncOptions,
+        options: &ScannerSyncOptions,
         accounts: &[ScanningAccount],
         commitments: Vec<Document<Commitment>>,
     ) -> Vec<Document<Commitment>> {
@@ -158,7 +158,7 @@ where
 
     async fn sync_by_commitment_hash(
         &self,
-        options: &SyncOptions,
+        options: &ScannerSyncOptions,
         accounts: &[ScanningAccount],
         commitments: Vec<Document<Commitment>>,
     ) {
@@ -197,7 +197,7 @@ where
         Ok(())
     }
 
-    async fn sync_commitment_status(&self, options: &SyncOptions, commitments: Vec<Document<Commitment>>) {
+    async fn sync_commitment_status(&self, options: &ScannerSyncOptions, commitments: Vec<Document<Commitment>>) {
         let concurrency = std::cmp::max(1, options.concurrency.unwrap_or_default()) as usize;
         let chunk_nums = commitments.len().div_ceil(concurrency);
         let chunks = commitments.chunks(chunk_nums);

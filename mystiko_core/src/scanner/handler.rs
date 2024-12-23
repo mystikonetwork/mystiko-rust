@@ -9,8 +9,8 @@ use itertools::Itertools;
 use mystiko_config::MystikoConfig;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::scanner::v1::{
-    AssetImportOptions, AssetImportResult, AssetsByChain, AssetsOptions, BalanceOptions, BalanceResult, ResetResult,
-    ScanOptions, ScanResult, ScannerResetOptions, SyncOptions,
+    AssetImportOptions, AssetImportResult, AssetsByChain, AssetsOptions, BalanceOptions, BalanceResult,
+    ScannerResetOptions, ScannerResetResult, ScannerScanOptions, ScannerScanResult, ScannerSyncOptions,
 };
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
@@ -82,11 +82,11 @@ where
 #[async_trait]
 impl<F, S, C, Q, P>
     ScannerHandler<
-        SyncOptions,
-        ScanOptions,
-        ScanResult,
+        ScannerSyncOptions,
+        ScannerScanOptions,
+        ScannerScanResult,
         ScannerResetOptions,
-        ResetResult,
+        ScannerResetResult,
         AssetImportOptions,
         AssetImportResult,
         BalanceOptions,
@@ -103,11 +103,11 @@ where
     ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
-    async fn sync(&self, options: SyncOptions) -> Result<BalanceResult, Self::Error> {
+    async fn sync(&self, options: ScannerSyncOptions) -> Result<BalanceResult, Self::Error> {
         self.asset_sync(options).await
     }
 
-    async fn scan(&self, options: ScanOptions) -> Result<ScanResult, Self::Error> {
+    async fn scan(&self, options: ScannerScanOptions) -> Result<ScannerScanResult, Self::Error> {
         self.wallets.check_password(&options.wallet_password).await?;
         let mut accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
         if accounts.is_empty() {
@@ -138,7 +138,7 @@ where
             total_scanned += result.scanned_count;
         }
 
-        Ok(ScanResult::builder()
+        Ok(ScannerScanResult::builder()
             .total_count(total_scanned)
             .owned_count(total_owned)
             .scanned_shielded_addresses(
@@ -151,10 +151,10 @@ where
             .build())
     }
 
-    async fn reset(&self, options: ScannerResetOptions) -> Result<ResetResult, Self::Error> {
+    async fn reset(&self, options: ScannerResetOptions) -> Result<ScannerResetResult, Self::Error> {
         let mut accounts = self.build_filter_accounts(&options.shielded_addresses).await?;
         if accounts.is_empty() {
-            return Ok(ResetResult::default());
+            return Ok(ScannerResetResult::default());
         }
 
         accounts.iter_mut().for_each(|account| {
@@ -171,7 +171,7 @@ where
             options.reset_to_id,
             shielded_addresses
         );
-        Ok(ResetResult::default())
+        Ok(ScannerResetResult::default())
     }
 
     async fn import(&self, options: AssetImportOptions) -> Result<AssetImportResult, Self::Error> {

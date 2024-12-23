@@ -1,6 +1,7 @@
 use crate::runtime;
 use mystiko_protos::api::synchronizer::v1::{
-    ChainSyncedBlockRequest, ContractSyncedBlockRequest, StatusRequest, SyncRequest, SynchronizerResetRequest,
+    ChainSyncedBlockRequest, ContractSyncedBlockRequest, SynchronizerResetRequest, SynchronizerStatusRequest,
+    SynchronizerSyncRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
 
@@ -31,8 +32,8 @@ where
 
 pub fn status<M>(message: M) -> ApiResponse
 where
-    M: TryInto<StatusRequest>,
-    <M as TryInto<StatusRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<SynchronizerStatusRequest>,
+    <M as TryInto<SynchronizerStatusRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => runtime().block_on(internal::status(message.with_contracts)),
@@ -42,8 +43,8 @@ where
 
 pub fn sync<M>(message: M) -> ApiResponse
 where
-    M: TryInto<SyncRequest>,
-    <M as TryInto<SyncRequest>>::Error: std::error::Error + Send + Sync + 'static,
+    M: TryInto<SynchronizerSyncRequest>,
+    <M as TryInto<SynchronizerSyncRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
         Ok(message) => {
@@ -77,10 +78,10 @@ mod internal {
     use crate::instance;
     use mystiko_core::SynchronizerHandler;
     use mystiko_protos::api::synchronizer::v1::{
-        ChainSyncedBlockResponse, ContractSyncedBlockResponse, StatusResponse,
+        ChainSyncedBlockResponse, ContractSyncedBlockResponse, SynchronizerStatusResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, SynchronizerError};
-    use mystiko_protos::core::synchronizer::v1::{SyncOptions, SynchronizerResetOptions};
+    use mystiko_protos::core::synchronizer::v1::{SynchronizerResetOptions, SynchronizerSyncOptions};
 
     pub(crate) async fn chain_synced_block(chain_id: u64) -> ApiResponse {
         let mystiko_guard = instance().read().await;
@@ -119,7 +120,7 @@ mod internal {
             Ok(mystiko) => {
                 let result = mystiko.synchronizer.status(with_contracts).await;
                 match result {
-                    Ok(status) => ApiResponse::success(StatusResponse::builder().status(status).build()),
+                    Ok(status) => ApiResponse::success(SynchronizerStatusResponse::builder().status(status).build()),
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }
@@ -127,13 +128,13 @@ mod internal {
         }
     }
 
-    pub(crate) async fn sync(sync_option: SyncOptions) -> ApiResponse {
+    pub(crate) async fn sync(sync_option: SynchronizerSyncOptions) -> ApiResponse {
         let mystiko_guard = instance().read().await;
         match mystiko_guard.get() {
             Ok(mystiko) => {
                 let result = mystiko.synchronizer.sync(sync_option).await;
                 match result {
-                    Ok(status) => ApiResponse::success(StatusResponse::builder().status(status).build()),
+                    Ok(status) => ApiResponse::success(SynchronizerStatusResponse::builder().status(status).build()),
                     Err(err) => ApiResponse::error(parse_synchronizer_error(&err), err),
                 }
             }

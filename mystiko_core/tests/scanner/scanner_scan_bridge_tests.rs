@@ -1,7 +1,7 @@
 use crate::scanner::{create_scanner, insert_commitments, DEFAULT_WALLET_PASSWORD};
 use mystiko_core::{CommitmentColumn, Nullifier, ScannerHandler};
 use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::core::scanner::v1::ScanOptions;
+use mystiko_protos::core::scanner::v1::ScannerScanOptions;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::storage::v1::SubFilter;
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ async fn test_scan_batch_without_owned() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
     let (scanner, db, _) = create_scanner(account_count, None, HashMap::new(), None, None).await;
-    let option = ScanOptions::builder()
+    let option = ScannerScanOptions::builder()
         .batch_size(10)
         .concurrency(1)
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
@@ -41,7 +41,7 @@ async fn test_scan_batch_with_owned() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
     let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
-    let option = ScanOptions::builder()
+    let option = ScannerScanOptions::builder()
         .batch_size(10)
         .concurrency(2)
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))
@@ -129,7 +129,7 @@ async fn test_scan_batch_with_owned_without_nullifier() {
     let account_count = 1_usize;
     let commitment_count = 20_usize;
     let (scanner, db, accounts) = create_scanner(account_count, None, HashMap::new(), None, None).await;
-    let option = ScanOptions::builder()
+    let option = ScannerScanOptions::builder()
         .batch_size(10)
         .concurrency(2)
         .wallet_password(String::from(DEFAULT_WALLET_PASSWORD))

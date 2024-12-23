@@ -1,186 +1,4 @@
 // @generated
-impl serde::Serialize for AssetImportRequest {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.options.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.AssetImportRequest", len)?;
-        if let Some(v) = self.options.as_ref() {
-            struct_ser.serialize_field("options", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for AssetImportRequest {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "options",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Options,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "options" => Ok(GeneratedField::Options),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = AssetImportRequest;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.AssetImportRequest")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetImportRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut options__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Options => {
-                            if options__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("options"));
-                            }
-                            options__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(AssetImportRequest {
-                    options: options__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.AssetImportRequest", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for AssetImportResponse {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.result.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.AssetImportResponse", len)?;
-        if let Some(v) = self.result.as_ref() {
-            struct_ser.serialize_field("result", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for AssetImportResponse {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "result",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Result,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "result" => Ok(GeneratedField::Result),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = AssetImportResponse;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.AssetImportResponse")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<AssetImportResponse, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut result__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Result => {
-                            if result__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("result"));
-                            }
-                            result__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(AssetImportResponse {
-                    result: result__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.AssetImportResponse", FIELDS, GeneratedVisitor)
-    }
-}
 impl serde::Serialize for AssetsRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
@@ -747,98 +565,7 @@ impl<'de> serde::Deserialize<'de> for ChainAssetsResponse {
         deserializer.deserialize_struct("mystiko.api.scanner.v1.ChainAssetsResponse", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ResetResponse {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.result.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ResetResponse", len)?;
-        if let Some(v) = self.result.as_ref() {
-            struct_ser.serialize_field("result", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for ResetResponse {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "result",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Result,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "result" => Ok(GeneratedField::Result),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ResetResponse;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.ResetResponse")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ResetResponse, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut result__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Result => {
-                            if result__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("result"));
-                            }
-                            result__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(ResetResponse {
-                    result: result__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.ResetResponse", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for ScanRequest {
+impl serde::Serialize for ScannerAssetImportRequest {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -849,14 +576,14 @@ impl serde::Serialize for ScanRequest {
         if self.options.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScanRequest", len)?;
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerAssetImportRequest", len)?;
         if let Some(v) = self.options.as_ref() {
             struct_ser.serialize_field("options", v)?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for ScanRequest {
+impl<'de> serde::Deserialize<'de> for ScannerAssetImportRequest {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -900,13 +627,13 @@ impl<'de> serde::Deserialize<'de> for ScanRequest {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ScanRequest;
+            type Value = ScannerAssetImportRequest;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.ScanRequest")
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerAssetImportRequest")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScanRequest, V::Error>
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerAssetImportRequest, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -921,15 +648,15 @@ impl<'de> serde::Deserialize<'de> for ScanRequest {
                         }
                     }
                 }
-                Ok(ScanRequest {
+                Ok(ScannerAssetImportRequest {
                     options: options__,
                 })
             }
         }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScanRequest", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerAssetImportRequest", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for ScanResponse {
+impl serde::Serialize for ScannerAssetImportResponse {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -940,14 +667,14 @@ impl serde::Serialize for ScanResponse {
         if self.result.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScanResponse", len)?;
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerAssetImportResponse", len)?;
         if let Some(v) = self.result.as_ref() {
             struct_ser.serialize_field("result", v)?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for ScanResponse {
+impl<'de> serde::Deserialize<'de> for ScannerAssetImportResponse {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -991,13 +718,13 @@ impl<'de> serde::Deserialize<'de> for ScanResponse {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = ScanResponse;
+            type Value = ScannerAssetImportResponse;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.ScanResponse")
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerAssetImportResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScanResponse, V::Error>
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerAssetImportResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -1012,12 +739,12 @@ impl<'de> serde::Deserialize<'de> for ScanResponse {
                         }
                     }
                 }
-                Ok(ScanResponse {
+                Ok(ScannerAssetImportResponse {
                     result: result__,
                 })
             }
         }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScanResponse", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerAssetImportResponse", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for ScannerResetRequest {
@@ -1111,98 +838,7 @@ impl<'de> serde::Deserialize<'de> for ScannerResetRequest {
         deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerResetRequest", FIELDS, GeneratedVisitor)
     }
 }
-impl serde::Serialize for SyncRequest {
-    #[allow(deprecated)]
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-        let mut len = 0;
-        if self.options.is_some() {
-            len += 1;
-        }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.SyncRequest", len)?;
-        if let Some(v) = self.options.as_ref() {
-            struct_ser.serialize_field("options", v)?;
-        }
-        struct_ser.end()
-    }
-}
-impl<'de> serde::Deserialize<'de> for SyncRequest {
-    #[allow(deprecated)]
-    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        const FIELDS: &[&str] = &[
-            "options",
-        ];
-
-        #[allow(clippy::enum_variant_names)]
-        enum GeneratedField {
-            Options,
-        }
-        impl<'de> serde::Deserialize<'de> for GeneratedField {
-            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
-            where
-                D: serde::Deserializer<'de>,
-            {
-                struct GeneratedVisitor;
-
-                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-                    type Value = GeneratedField;
-
-                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                        write!(formatter, "expected one of: {:?}", &FIELDS)
-                    }
-
-                    #[allow(unused_variables)]
-                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
-                    where
-                        E: serde::de::Error,
-                    {
-                        match value {
-                            "options" => Ok(GeneratedField::Options),
-                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-                deserializer.deserialize_identifier(GeneratedVisitor)
-            }
-        }
-        struct GeneratedVisitor;
-        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = SyncRequest;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.SyncRequest")
-            }
-
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<SyncRequest, V::Error>
-                where
-                    V: serde::de::MapAccess<'de>,
-            {
-                let mut options__ = None;
-                while let Some(k) = map.next_key()? {
-                    match k {
-                        GeneratedField::Options => {
-                            if options__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("options"));
-                            }
-                            options__ = map.next_value()?;
-                        }
-                    }
-                }
-                Ok(SyncRequest {
-                    options: options__,
-                })
-            }
-        }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.SyncRequest", FIELDS, GeneratedVisitor)
-    }
-}
-impl serde::Serialize for SyncResponse {
+impl serde::Serialize for ScannerResetResponse {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
@@ -1213,14 +849,14 @@ impl serde::Serialize for SyncResponse {
         if self.result.is_some() {
             len += 1;
         }
-        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.SyncResponse", len)?;
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerResetResponse", len)?;
         if let Some(v) = self.result.as_ref() {
             struct_ser.serialize_field("result", v)?;
         }
         struct_ser.end()
     }
 }
-impl<'de> serde::Deserialize<'de> for SyncResponse {
+impl<'de> serde::Deserialize<'de> for ScannerResetResponse {
     #[allow(deprecated)]
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
     where
@@ -1264,13 +900,13 @@ impl<'de> serde::Deserialize<'de> for SyncResponse {
         }
         struct GeneratedVisitor;
         impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
-            type Value = SyncResponse;
+            type Value = ScannerResetResponse;
 
             fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                formatter.write_str("struct mystiko.api.scanner.v1.SyncResponse")
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerResetResponse")
             }
 
-            fn visit_map<V>(self, mut map: V) -> std::result::Result<SyncResponse, V::Error>
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerResetResponse, V::Error>
                 where
                     V: serde::de::MapAccess<'de>,
             {
@@ -1285,11 +921,375 @@ impl<'de> serde::Deserialize<'de> for SyncResponse {
                         }
                     }
                 }
-                Ok(SyncResponse {
+                Ok(ScannerResetResponse {
                     result: result__,
                 })
             }
         }
-        deserializer.deserialize_struct("mystiko.api.scanner.v1.SyncResponse", FIELDS, GeneratedVisitor)
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerResetResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerScanRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.options.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerScanRequest", len)?;
+        if let Some(v) = self.options.as_ref() {
+            struct_ser.serialize_field("options", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerScanRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "options",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Options,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "options" => Ok(GeneratedField::Options),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerScanRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerScanRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerScanRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut options__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ScannerScanRequest {
+                    options: options__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerScanRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerScanResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.result.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerScanResponse", len)?;
+        if let Some(v) = self.result.as_ref() {
+            struct_ser.serialize_field("result", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerScanResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "result",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Result,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "result" => Ok(GeneratedField::Result),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerScanResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerScanResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerScanResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut result__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Result => {
+                            if result__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("result"));
+                            }
+                            result__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ScannerScanResponse {
+                    result: result__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerScanResponse", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerSyncRequest {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.options.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerSyncRequest", len)?;
+        if let Some(v) = self.options.as_ref() {
+            struct_ser.serialize_field("options", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerSyncRequest {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "options",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Options,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "options" => Ok(GeneratedField::Options),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerSyncRequest;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerSyncRequest")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerSyncRequest, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut options__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Options => {
+                            if options__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("options"));
+                            }
+                            options__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ScannerSyncRequest {
+                    options: options__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerSyncRequest", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for ScannerSyncResponse {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if self.result.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.api.scanner.v1.ScannerSyncResponse", len)?;
+        if let Some(v) = self.result.as_ref() {
+            struct_ser.serialize_field("result", v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for ScannerSyncResponse {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "result",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            Result,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "result" => Ok(GeneratedField::Result),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = ScannerSyncResponse;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.api.scanner.v1.ScannerSyncResponse")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<ScannerSyncResponse, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut result__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::Result => {
+                            if result__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("result"));
+                            }
+                            result__ = map.next_value()?;
+                        }
+                    }
+                }
+                Ok(ScannerSyncResponse {
+                    result: result__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.api.scanner.v1.ScannerSyncResponse", FIELDS, GeneratedVisitor)
     }
 }

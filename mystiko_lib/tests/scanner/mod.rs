@@ -5,13 +5,13 @@ use mystiko_protos::api::handler::v1::{
 };
 use mystiko_protos::api::scanner::v1::{
     AssetsRequest, AssetsResponse, BalanceRequest, BalanceResponse, ChainAssetsRequest, ChainAssetsResponse,
-    ResetResponse, ScanRequest, ScanResponse, ScannerResetRequest,
+    ScannerResetRequest, ScannerResetResponse, ScannerScanRequest, ScannerScanResponse,
 };
 use mystiko_protos::api::v1::status_code::Error;
 use mystiko_protos::api::v1::ScannerError;
 use mystiko_protos::core::document::v1::{Account, Wallet};
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions};
-use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ScanOptions, ScannerResetOptions};
+use mystiko_protos::core::scanner::v1::{AssetsOptions, BalanceOptions, ScannerResetOptions, ScannerScanOptions};
 use serial_test::serial;
 
 const DEFAULT_WALLET_PASSWORD: &str = "P@ssw0rd";
@@ -53,15 +53,9 @@ fn scanner_setup() -> (Wallet, Account) {
 fn test_scan() {
     scanner_setup();
 
-    let response = scanner::scan(ScanRequest::builder().options(ScanOptions::builder().build()).build());
-    assert_eq!(
-        response.code.unwrap().error.unwrap(),
-        Error::Scanner(ScannerError::WalletHandlerError as i32)
-    );
-
     let response = scanner::scan(
-        ScanRequest::builder()
-            .options(ScanOptions::builder().wallet_password("wrong_password").build())
+        ScannerScanRequest::builder()
+            .options(ScannerScanOptions::builder().build())
             .build(),
     );
     assert_eq!(
@@ -70,12 +64,26 @@ fn test_scan() {
     );
 
     let response = scanner::scan(
-        ScanRequest::builder()
-            .options(ScanOptions::builder().wallet_password(DEFAULT_WALLET_PASSWORD).build())
+        ScannerScanRequest::builder()
+            .options(ScannerScanOptions::builder().wallet_password("wrong_password").build())
+            .build(),
+    );
+    assert_eq!(
+        response.code.unwrap().error.unwrap(),
+        Error::Scanner(ScannerError::WalletHandlerError as i32)
+    );
+
+    let response = scanner::scan(
+        ScannerScanRequest::builder()
+            .options(
+                ScannerScanOptions::builder()
+                    .wallet_password(DEFAULT_WALLET_PASSWORD)
+                    .build(),
+            )
             .build(),
     );
     assert!(response.code.unwrap().success);
-    let scan_result = ScanResponse::try_from(extract_data(response.result.unwrap()));
+    let scan_result = ScannerScanResponse::try_from(extract_data(response.result.unwrap()));
     assert!(scan_result.is_ok());
 }
 
@@ -89,7 +97,7 @@ fn test_reset() {
             .build(),
     );
     assert!(response.code.unwrap().success);
-    let result = ResetResponse::try_from(extract_data(response.result.unwrap()));
+    let result = ScannerResetResponse::try_from(extract_data(response.result.unwrap()));
     assert!(result.is_ok());
 }
 
