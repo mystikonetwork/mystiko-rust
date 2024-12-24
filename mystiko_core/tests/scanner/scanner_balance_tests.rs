@@ -5,6 +5,8 @@ use mystiko_protos::core::scanner::v1::BalanceOptions;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_utils::convert::decimal_to_number;
 use num_bigint::BigUint;
+use rand::prelude::SliceRandom;
+use rand::thread_rng;
 use std::collections::HashMap;
 
 #[tokio::test]
@@ -72,17 +74,35 @@ async fn test_pending_balance_default() {
     }
     db.commitments.update_batch(&cms).await.unwrap();
 
-    let mut result = scanner.balance(option).await.unwrap();
+    let mut result = scanner.balance(option.clone()).await.unwrap();
     let pending_mtt = decimal_to_number::<f64, BigUint>(&amount_mtt, Some(18)).unwrap();
     let pending_eth = decimal_to_number::<f64, BigUint>(&amount_eth, Some(18)).unwrap();
-    result.balances.sort_by_key(|b| b.asset_symbol.clone());
     assert_eq!(result.balances.len(), 2);
+    result.balances.sort_by_key(|b| b.asset_symbol.clone());
     assert_eq!(result.balances[0].asset_symbol, "ETH");
     assert_eq!(result.balances[0].pending, pending_eth);
     assert_eq!(result.balances[0].unspent, 0.0);
     assert_eq!(result.balances[0].spent, None);
     assert_eq!(result.balances[1].asset_symbol, "MTT");
     assert_eq!(result.balances[1].pending, pending_mtt);
+    assert_eq!(result.balances[1].unspent, 0.0);
+    assert_eq!(result.balances[1].spent, None);
+
+    db.commitments.delete_all().await.unwrap();
+    let mut rng = thread_rng();
+    cms.shuffle(&mut rng);
+    let cms = cms.into_iter().map(|cm| cm.data).collect::<Vec<_>>();
+    db.commitments.insert_batch(&cms).await.unwrap();
+
+    let mut result = scanner.balance(option).await.unwrap();
+    assert_eq!(result.balances.len(), 2);
+    result.balances.sort_by_key(|b| b.asset_symbol.clone());
+    assert_eq!(result.balances[0].asset_symbol, "ETH");
+    assert!((result.balances[0].pending - pending_eth).abs() < 1e-14);
+    assert_eq!(result.balances[0].unspent, 0.0);
+    assert_eq!(result.balances[0].spent, None);
+    assert_eq!(result.balances[1].asset_symbol, "MTT");
+    assert!((result.balances[1].pending - pending_mtt).abs() < 1e-14);
     assert_eq!(result.balances[1].unspent, 0.0);
     assert_eq!(result.balances[1].spent, None);
 }
