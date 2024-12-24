@@ -448,23 +448,36 @@ where
         &self,
         options: &AssetsOptions,
         chain_id: Option<u64>,
-    ) -> Result<Condition, ScannerError> {
+    ) -> Result<QueryFilter, ScannerError> {
         let filter_addresses = self
             .build_filter_accounts(&options.shielded_addresses)
             .await?
             .into_iter()
             .map(|account| account.data.shielded_address)
             .collect::<Vec<_>>();
-        let mut filters = vec![
+        let mut sub_filters = vec![
             SubFilter::is_not_null(CommitmentColumn::Amount),
             SubFilter::in_list(CommitmentColumn::ShieldedAddress, filter_addresses),
             SubFilter::equal(CommitmentColumn::Spent, false),
             SubFilter::equal(CommitmentColumn::Status, CommitmentStatus::Included as i32),
         ];
         if let Some(chain) = chain_id {
-            filters.push(SubFilter::equal(CommitmentColumn::ChainId, chain));
+            sub_filters.push(SubFilter::equal(CommitmentColumn::ChainId, chain));
         }
-        Ok(Condition::from(filters))
+        let order = OrderBy::builder()
+            .columns(vec![
+                CommitmentColumn::ChainId.to_string(),
+                CommitmentColumn::BridgeType.to_string(),
+                CommitmentColumn::AssetSymbol.to_string(),
+                CommitmentColumn::ContractAddress.to_string(),
+            ])
+            .order(Order::Asc)
+            .build();
+        Ok(QueryFilter::builder()
+            .order_by(order)
+            .conditions(vec![Condition::from(sub_filters)])
+            .conditions_operator(ConditionOperator::And as i32)
+            .build())
     }
 
     pub(crate) async fn assets_balance(
