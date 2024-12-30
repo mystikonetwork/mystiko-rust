@@ -15,7 +15,7 @@ use mystiko_ethers::Providers;
 use mystiko_protocol::error::ProtocolError;
 use mystiko_protos::core::document::v1::Spend as ProtoSpend;
 use mystiko_protos::core::handler::v1::{
-    CreateSpendOptions, QuoteSpendOptions, SendSpendOptions, SpendQuote, SpendSummary,
+    CreateSpendOptions, FixSpendStatusOptions, QuoteSpendOptions, SendSpendOptions, SpendQuote, SpendSummary,
 };
 use mystiko_protos::core::v1::Transaction;
 use mystiko_protos::data::v1::{ChainData, MerkleTree};
@@ -94,8 +94,15 @@ type Result<T, E = SpendsError> = std::result::Result<T, E>;
 
 #[async_trait]
 impl<F, S, A, C, T, P, R, V, K, X>
-    SpendHandler<ProtoSpend, QuoteSpendOptions, SpendQuote, CreateSpendOptions, SpendSummary, SendSpendOptions>
-    for Spends<F, S, A, C, T, P, R, V, K, X>
+    SpendHandler<
+        ProtoSpend,
+        QuoteSpendOptions,
+        SpendQuote,
+        CreateSpendOptions,
+        SpendSummary,
+        SendSpendOptions,
+        FixSpendStatusOptions,
+    > for Spends<F, S, A, C, T, P, R, V, K, X>
 where
     F: StatementFormatter,
     S: Storage,
@@ -157,6 +164,11 @@ where
         let spend = self.spend_to_send(&options).await?;
         let result = self.execute_send_with_signer(&options, spend.clone(), signer).await;
         self.handle_send_result(spend, result).await
+    }
+
+    async fn fix_status(&self, options: FixSpendStatusOptions) -> Result<ProtoSpend> {
+        let spend = self.execute_fix_status(options).await?;
+        Ok(Spend::document_into_proto(spend))
     }
 
     async fn find<Filter>(&self, filter: Filter) -> Result<Vec<ProtoSpend>>

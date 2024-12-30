@@ -1,6 +1,7 @@
 mod context;
 mod create;
 mod error;
+mod fix;
 mod handler;
 mod merkle;
 mod proof;
@@ -23,7 +24,7 @@ use mystiko_storage::ColumnValues;
 use std::sync::Arc;
 
 #[async_trait]
-pub trait SpendHandler<S, QO, QR, CO, SS, SO>: Send + Sync {
+pub trait SpendHandler<S, QO, QR, CO, SS, SO, FO>: Send + Sync {
     type Error;
 
     async fn quote(&self, options: QO) -> Result<QR, Self::Error>;
@@ -37,6 +38,7 @@ pub trait SpendHandler<S, QO, QR, CO, SS, SO>: Send + Sync {
     async fn send_with_signer<Signer>(&self, options: SO, signer: Arc<Signer>) -> Result<S, Self::Error>
     where
         Signer: TransactionSigner + 'static;
+    async fn fix_status(&self, options: FO) -> Result<S, Self::Error>;
 
     async fn find<Filter>(&self, filter: Filter) -> Result<Vec<S>, Self::Error>
     where

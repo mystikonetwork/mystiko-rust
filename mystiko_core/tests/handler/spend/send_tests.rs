@@ -19,7 +19,7 @@ use mystiko_core::{Commitment, CommitmentColumn, PrivateKeySigner, SpendColumn, 
 use mystiko_crypto::merkle_tree::MerkleTree;
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::{Account, Spend};
-use mystiko_protos::core::handler::v1::{CreateSpendOptions, SendSpendOptions};
+use mystiko_protos::core::handler::v1::{CreateSpendOptions, FixSpendStatusOptions, SendSpendOptions};
 use mystiko_protos::core::v1::{SpendStatus, SpendType};
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::data::v1::MerkleTree as ProtoMerkleTree;
@@ -35,6 +35,7 @@ use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
+use std::vec;
 use typed_builder::TypedBuilder;
 
 #[tokio::test]
@@ -163,6 +164,42 @@ async fn test_send_withdraw1x0() {
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[]).await;
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(101)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Failed as i32);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(!cms[0].data.spent);
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(102)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(cms[0].data.spent);
 }
 
 #[tokio::test]
@@ -273,6 +310,64 @@ async fn test_send_withdraw2x0() {
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[]).await;
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(201)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Failed as i32);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(!cms[0].data.spent);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[1]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(!cms[0].data.spent);
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(202)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(cms[0].data.spent);
+    let cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[1]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(cms.len(), 1);
+    assert!(!cms[0].data.spent);
 }
 
 #[tokio::test]
@@ -387,6 +482,98 @@ async fn test_send_withdraw1x1() {
     assert_eq!(spend.spend_type, SpendType::Withdraw as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[2.0]).await;
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(301)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Failed as i32);
+    let input_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(input_cms.len(), 1);
+    assert!(!input_cms[0].data.spent);
+    let output_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.output_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(output_cms.len(), 1);
+    assert!(!output_cms[0].data.spent);
+    assert_eq!(output_cms[0].data.status, CommitmentStatus::Queued as i32);
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(302)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    let input_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(input_cms.len(), 1);
+    assert!(input_cms[0].data.spent);
+    let mut output_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.output_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(output_cms.len(), 1);
+    assert!(!output_cms[0].data.spent);
+    assert_eq!(output_cms[0].data.status, CommitmentStatus::Queued as i32);
+    output_cms[0].data.included_transaction_hash = Some("123".to_string());
+    context.db.commitments.update(&output_cms[0]).await.unwrap();
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(302)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    let input_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(input_cms.len(), 1);
+    assert!(input_cms[0].data.spent);
+    let output_cms = context
+        .db
+        .commitments
+        .find(SubFilter::equal(
+            CommitmentColumn::CommitmentHash,
+            BigUint::from_str(&spend.output_commitments[0]).unwrap(),
+        ))
+        .await
+        .unwrap();
+    assert_eq!(output_cms.len(), 1);
+    assert!(!output_cms[0].data.spent);
+    assert_eq!(output_cms[0].data.status, CommitmentStatus::Included as i32);
 }
 
 #[tokio::test]
@@ -962,6 +1149,86 @@ async fn test_send_transfer2x2() {
     assert_eq!(spend.spend_type, SpendType::Transfer as i32);
     assert_eq!(spend.status, SpendStatus::Succeeded as i32);
     context.check_commitments(&spend, 200010000_u64, &[2.0, 4.0]).await;
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(601)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Failed as i32);
+    let input_cms = context
+        .db
+        .commitments
+        .find(SubFilter::in_list(
+            CommitmentColumn::CommitmentHash,
+            vec![
+                BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+                BigUint::from_str(&spend.input_commitments[1]).unwrap(),
+            ],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(input_cms.len(), 2);
+    assert!(!input_cms[0].data.spent);
+    assert!(!input_cms[1].data.spent);
+    let mut output_cms = context
+        .db
+        .commitments
+        .find(SubFilter::in_list(
+            CommitmentColumn::CommitmentHash,
+            vec![
+                BigUint::from_str(&spend.output_commitments[0]).unwrap(),
+                BigUint::from_str(&spend.output_commitments[1]).unwrap(),
+            ],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(output_cms.len(), 2);
+    assert!(!output_cms[0].data.spent);
+    assert!(!output_cms[1].data.spent);
+    assert_eq!(output_cms[0].data.status, CommitmentStatus::Queued as i32);
+    assert_eq!(output_cms[1].data.status, CommitmentStatus::Queued as i32);
+    output_cms[0].data.included_transaction_hash = Some("123".to_string());
+    context.db.commitments.update(&output_cms[0]).await.unwrap();
+
+    let fix_options = FixSpendStatusOptions::builder()
+        .query_timeout_ms(602)
+        .spend_id(spend.id)
+        .build();
+    let spend = context.handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(spend.status, SpendStatus::Succeeded as i32);
+    let input_cms = context
+        .db
+        .commitments
+        .find(SubFilter::in_list(
+            CommitmentColumn::CommitmentHash,
+            vec![
+                BigUint::from_str(&spend.input_commitments[0]).unwrap(),
+                BigUint::from_str(&spend.input_commitments[1]).unwrap(),
+            ],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(input_cms.len(), 2);
+    assert!(input_cms[0].data.spent);
+    assert!(input_cms[1].data.spent);
+    let output_cms = context
+        .db
+        .commitments
+        .find(SubFilter::in_list(
+            CommitmentColumn::CommitmentHash,
+            vec![
+                BigUint::from_str(&spend.output_commitments[0]).unwrap(),
+                BigUint::from_str(&spend.output_commitments[1]).unwrap(),
+            ],
+        ))
+        .await
+        .unwrap();
+    assert_eq!(output_cms.len(), 2);
+    assert!(!output_cms[0].data.spent);
+    assert!(!output_cms[1].data.spent);
+    assert_eq!(output_cms[0].data.status, CommitmentStatus::Included as i32);
+    assert_eq!(output_cms[1].data.status, CommitmentStatus::Queued as i32);
 }
 
 #[tokio::test]
@@ -2017,14 +2284,30 @@ pub fn setup_commitment_pool_contracts(
         .withf(move |options| {
             options.chain_id == chain_id
                 && options.contract_address == contract_address
-                && options.timeout_ms == query_timeout_ms
                 && spent_nullifiers.contains_key(&options.nullifier)
         })
         .returning(move |options| {
-            Ok(spend_nullifiers_clone
-                .get(&options.nullifier)
-                .cloned()
-                .unwrap_or_default())
+            if options.timeout_ms == Some(102_u64)
+                || (options.timeout_ms == Some(202_u64) && options.nullifier == U256::from(2_u32))
+                || options.timeout_ms == Some(302_u64)
+                || options.timeout_ms == Some(602_u64)
+            {
+                Ok(true)
+            } else {
+                Ok(spend_nullifiers_clone
+                    .get(&options.nullifier)
+                    .cloned()
+                    .unwrap_or_default())
+            }
+        });
+    commitment_pool_contracts
+        .expect_is_historic_commitment()
+        .returning(move |options| {
+            if options.timeout_ms == Some(302_u64) || options.timeout_ms == Some(602_u64) {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
         });
     commitment_pool_contracts
         .expect_is_known_root()

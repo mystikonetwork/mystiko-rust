@@ -1,8 +1,8 @@
 use crate::runtime;
 use mystiko_protos::api::handler::v1::{
     CountSpendsRequest, CreateSpendRequest, DeleteSpendBatchRequest, DeleteSpendByFilterRequest, DeleteSpendRequest,
-    FindSpendByIdRequest, FindSpendRequest, SendSpendRequest, SendSpendWithGrpcRequest, SpendQuoteRequest,
-    SpendSummaryRequest, UpdateAllSpendRequest, UpdateSpendBatchRequest, UpdateSpendByFilterRequest,
+    FindSpendByIdRequest, FindSpendRequest, FixSpendStatusRequest, SendSpendRequest, SendSpendWithGrpcRequest,
+    SpendQuoteRequest, SpendSummaryRequest, UpdateAllSpendRequest, UpdateSpendBatchRequest, UpdateSpendByFilterRequest,
     UpdateSpendRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, SpendError};
@@ -85,6 +85,22 @@ where
                     message.send_options.unwrap(),
                     message.client_options.unwrap(),
                 ));
+            }
+            ApiResponse::unknown_error("unexpected message")
+        }
+        Err(err) => ApiResponse::error(SpendError::DeserializeMessageError, err),
+    }
+}
+
+pub fn fix_status<M>(message: M) -> ApiResponse
+where
+    M: TryInto<FixSpendStatusRequest>,
+    <M as TryInto<FixSpendStatusRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    match message.try_into() {
+        Ok(message) => {
+            if let Some(options) = message.options {
+                return runtime().block_on(internal::fix_status(options));
             }
             ApiResponse::unknown_error("unexpected message")
         }
@@ -286,11 +302,13 @@ mod internal {
     use crate::instance;
     use mystiko_core::{GrpcSigner, SpendHandler};
     use mystiko_protos::api::handler::v1::{
-        CountSpendsResponse, CreateSpendResponse, FindOneSpendResponse, FindSpendsResponse, SendSpendResponse,
-        SpendQuoteResponse, SpendSummaryResponse, UpdateSpendBatchResponse, UpdateSpendResponse,
+        CountSpendsResponse, CreateSpendResponse, FindOneSpendResponse, FindSpendsResponse, FixSpendStatusResponse,
+        SendSpendResponse, SpendQuoteResponse, SpendSummaryResponse, UpdateSpendBatchResponse, UpdateSpendResponse,
     };
     use mystiko_protos::core::document::v1::Spend;
-    use mystiko_protos::core::handler::v1::{CreateSpendOptions, QuoteSpendOptions, SendSpendOptions};
+    use mystiko_protos::core::handler::v1::{
+        CreateSpendOptions, FixSpendStatusOptions, QuoteSpendOptions, SendSpendOptions,
+    };
     use mystiko_protos::service::v1::ClientOptions;
     use mystiko_protos::storage::v1::QueryFilter;
     use mystiko_storage::ColumnValues;
@@ -363,6 +381,20 @@ mod internal {
                 },
                 Err(err) => ApiResponse::error(SpendError::GrpcConnectError, err),
             },
+            Err(err) => ApiResponse::error(SpendError::GetMystikoGuardError, err),
+        }
+    }
+
+    pub(crate) async fn fix_status(options: FixSpendStatusOptions) -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.spends.fix_status(options).await;
+                match result {
+                    Ok(spend) => ApiResponse::success(FixSpendStatusResponse::builder().spend(spend).build()),
+                    Err(err) => ApiResponse::error(parse_spends_error(&err), err),
+                }
+            }
             Err(err) => ApiResponse::error(SpendError::GetMystikoGuardError, err),
         }
     }

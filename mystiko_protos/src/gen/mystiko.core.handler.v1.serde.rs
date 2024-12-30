@@ -1922,6 +1922,230 @@ impl<'de> serde::Deserialize<'de> for DepositSummary {
         deserializer.deserialize_struct("mystiko.core.handler.v1.DepositSummary", FIELDS, GeneratedVisitor)
     }
 }
+impl serde::Serialize for FixDepositStatusOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.deposit_id.is_empty() {
+            len += 1;
+        }
+        if self.query_timeout_ms.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.FixDepositStatusOptions", len)?;
+        if !self.deposit_id.is_empty() {
+            struct_ser.serialize_field("depositId", &self.deposit_id)?;
+        }
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FixDepositStatusOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "deposit_id",
+            "depositId",
+            "query_timeout_ms",
+            "queryTimeoutMs",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            DepositId,
+            QueryTimeoutMs,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "depositId" | "deposit_id" => Ok(GeneratedField::DepositId),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FixDepositStatusOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.handler.v1.FixDepositStatusOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FixDepositStatusOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut deposit_id__ = None;
+                let mut query_timeout_ms__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::DepositId => {
+                            if deposit_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("depositId"));
+                            }
+                            deposit_id__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
+                            }
+                            query_timeout_ms__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(FixDepositStatusOptions {
+                    deposit_id: deposit_id__.unwrap_or_default(),
+                    query_timeout_ms: query_timeout_ms__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.handler.v1.FixDepositStatusOptions", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for FixSpendStatusOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.spend_id.is_empty() {
+            len += 1;
+        }
+        if self.query_timeout_ms.is_some() {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.FixSpendStatusOptions", len)?;
+        if !self.spend_id.is_empty() {
+            struct_ser.serialize_field("spendId", &self.spend_id)?;
+        }
+        if let Some(v) = self.query_timeout_ms.as_ref() {
+            struct_ser.serialize_field("queryTimeoutMs", ToString::to_string(&v).as_str())?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for FixSpendStatusOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "spend_id",
+            "spendId",
+            "query_timeout_ms",
+            "queryTimeoutMs",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            SpendId,
+            QueryTimeoutMs,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "spendId" | "spend_id" => Ok(GeneratedField::SpendId),
+                            "queryTimeoutMs" | "query_timeout_ms" => Ok(GeneratedField::QueryTimeoutMs),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = FixSpendStatusOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.handler.v1.FixSpendStatusOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<FixSpendStatusOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut spend_id__ = None;
+                let mut query_timeout_ms__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::SpendId => {
+                            if spend_id__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("spendId"));
+                            }
+                            spend_id__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::QueryTimeoutMs => {
+                            if query_timeout_ms__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("queryTimeoutMs"));
+                            }
+                            query_timeout_ms__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                    }
+                }
+                Ok(FixSpendStatusOptions {
+                    spend_id: spend_id__.unwrap_or_default(),
+                    query_timeout_ms: query_timeout_ms__,
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.handler.v1.FixSpendStatusOptions", FIELDS, GeneratedVisitor)
+    }
+}
 impl serde::Serialize for GasRelayer {
     #[allow(deprecated)]
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
