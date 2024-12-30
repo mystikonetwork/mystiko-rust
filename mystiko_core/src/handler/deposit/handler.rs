@@ -10,7 +10,8 @@ use mystiko_config::MystikoConfig;
 use mystiko_ethers::Providers;
 use mystiko_protos::core::document::v1::Deposit as ProtoDeposit;
 use mystiko_protos::core::handler::v1::{
-    CreateDepositOptions, DepositQuote, DepositSummary, QuoteDepositOptions, SendDepositOptions,
+    CreateDepositOptions, DepositQuote, DepositSummary, FixDepositStatusOptions, QuoteDepositOptions,
+    SendDepositOptions,
 };
 use mystiko_protos::core::v1::{DepositStatus, Transaction};
 use mystiko_protos::storage::v1::{QueryFilter, SubFilter};
@@ -78,6 +79,7 @@ impl<F, S, A, D, C, T, P, N>
         CreateDepositOptions,
         DepositSummary,
         SendDepositOptions,
+        FixDepositStatusOptions,
     > for Deposits<F, S, A, D, C, T, P, N>
 where
     F: StatementFormatter,
@@ -152,6 +154,11 @@ where
                 Ok(Deposit::document_into_proto(deposit))
             }
         }
+    }
+
+    async fn fix_status(&self, options: FixDepositStatusOptions) -> Result<ProtoDeposit> {
+        let deposit = self.execute_fix_status(options).await?;
+        Ok(Deposit::document_into_proto(deposit))
     }
 
     async fn find<Filter>(&self, filter: Filter) -> Result<Vec<ProtoDeposit>>

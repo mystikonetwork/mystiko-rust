@@ -15,7 +15,8 @@ use mystiko_ethers::{Provider, ProviderWrapper};
 use mystiko_protos::common::v1::BridgeType;
 use mystiko_protos::core::document::v1::{Account, Deposit, Wallet};
 use mystiko_protos::core::handler::v1::{
-    CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, QuoteDepositOptions, SendDepositOptions,
+    CreateAccountOptions, CreateDepositOptions, CreateWalletOptions, FixDepositStatusOptions, QuoteDepositOptions,
+    SendDepositOptions,
 };
 use mystiko_protos::core::v1::DepositStatus;
 use mystiko_protos::data::v1::CommitmentStatus;
@@ -716,9 +717,24 @@ async fn test_loop_deposit_main_token_send_with_screening() {
                 .signature("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c".to_string())
                 .build())
         });
+    let mut commitment_pool_contracts = MockCommitmentPoolContracts::new();
+    commitment_pool_contracts
+        .expect_is_historic_commitment()
+        .returning(move |options| {
+            if options.timeout_ms == Some(2_u64)
+                || options.timeout_ms == Some(3_u64)
+                || options.timeout_ms == Some(5_u64)
+                || options.timeout_ms == Some(6_u64)
+            {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        });
     let options = MockOptions::builder()
         .assets(assets)
         .deposit_contracts(deposit_contracts)
+        .commitment_pool_contracts(commitment_pool_contracts)
         .transactions(transactions)
         .screening(screening)
         .build();
@@ -761,11 +777,71 @@ async fn test_loop_deposit_main_token_send_with_screening() {
     assert!(deposit.error_message.is_none());
     check_commitment(&deposit, db.clone(), 200010000_u64, true, false).await;
 
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(1)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Failed as i32);
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(2)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert!(deposit.error_message.is_none());
+    let mut cms = db.commitments.find_all().await.unwrap();
+    assert_eq!(cms.len(), 1);
+    assert_eq!(cms[0].data.status, CommitmentStatus::Queued as i32);
+
+    cms[0].data.included_transaction_hash = Some("0x123".to_string());
+    db.commitments.update(&cms[0]).await.unwrap();
+    let mut deposits = db.deposits.find_all().await.unwrap();
+    assert_eq!(deposits.len(), 1);
+    deposits[0].data.status = DepositStatus::Failed as i32;
+    deposits[0].data.error_message = Some("error".to_string());
+    db.deposits.update(&deposits[0]).await.unwrap();
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(3)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Included as i32);
+    assert!(deposit.error_message.is_none());
+    let cms = db.commitments.find_all().await.unwrap();
+    assert_eq!(cms.len(), 1);
+    assert_eq!(cms[0].data.status, CommitmentStatus::Included as i32);
+
     db.accounts.delete_all().await.unwrap();
     let deposit = handler.create(create_options).await.unwrap();
-    options.deposit_id = deposit.id;
+    options.deposit_id = deposit.id.clone();
     let deposit = handler.send(options).await.unwrap();
-    check_commitment(&deposit, db, 200010000_u64, false, false).await;
+    check_commitment(&deposit, db.clone(), 200010000_u64, false, false).await;
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(4)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Failed as i32);
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(5)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert!(deposit.error_message.is_none());
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(6)
+        .deposit_id(deposit.id)
+        .build();
+    let deposit = handler.fix_status(fix_options).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert!(deposit.error_message.is_none());
 }
 
 #[tokio::test]
@@ -1070,9 +1146,20 @@ async fn test_cross_chain_deposit_erc20_token_send_without_screening() {
                 ..Default::default()
             })
         });
+    let mut commitment_pool_contracts = MockCommitmentPoolContracts::new();
+    commitment_pool_contracts
+        .expect_is_historic_commitment()
+        .returning(move |options| {
+            if options.timeout_ms == Some(2_u64) || options.timeout_ms == Some(3_u64) {
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        });
     let options = MockOptions::builder()
         .assets(assets)
         .deposit_contracts(deposit_contracts)
+        .commitment_pool_contracts(commitment_pool_contracts)
         .transactions(transactions)
         .build();
     let (db, handler) = setup(options).await;
@@ -1127,7 +1214,42 @@ async fn test_cross_chain_deposit_erc20_token_send_without_screening() {
     );
     assert_eq!(deposit.src_chain_transaction_hash(), deposit_tx_hash.encode_hex());
     assert!(deposit.error_message.is_none());
-    check_commitment(&deposit, db, 200010000_u64, true, true).await;
+    check_commitment(&deposit, db.clone(), 200010000_u64, true, true).await;
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(1)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::SrcSucceeded as i32);
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(2)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Queued as i32);
+    assert!(deposit.error_message.is_none());
+    let mut cms = db.commitments.find_all().await.unwrap();
+    assert_eq!(cms.len(), 1);
+    assert_eq!(cms[0].data.status, CommitmentStatus::Queued as i32);
+    cms[0].data.included_transaction_hash = Some("0x123".to_string());
+    db.commitments.update(&cms[0]).await.unwrap();
+    let mut deposits = db.deposits.find_all().await.unwrap();
+    assert_eq!(deposits.len(), 1);
+    deposits[0].data.status = DepositStatus::Failed as i32;
+    db.deposits.update(&deposits[0]).await.unwrap();
+
+    let fix_options = FixDepositStatusOptions::builder()
+        .query_timeout_ms(3)
+        .deposit_id(deposit.id.clone())
+        .build();
+    let deposit = handler.fix_status(fix_options.clone()).await.unwrap();
+    assert_eq!(deposit.status, DepositStatus::Included as i32);
+    assert!(deposit.error_message.is_none());
+    let cms = db.commitments.find_all().await.unwrap();
+    assert_eq!(cms.len(), 1);
+    assert_eq!(cms[0].data.status, CommitmentStatus::Included as i32);
 }
 
 #[tokio::test]
@@ -1740,7 +1862,7 @@ async fn check_commitment(
         .unwrap();
     if should_exist {
         let commitment = commitment.unwrap();
-        assert_eq!(commitment.data.chain_id, deposit.chain_id);
+        assert_eq!(commitment.data.chain_id, deposit.dst_chain_id);
         assert_eq!(commitment.data.bridge_type, deposit.bridge_type);
         assert_eq!(commitment.data.block_number, block_number);
         assert_eq!(commitment.data.asset_symbol, deposit.asset_symbol);
@@ -1770,7 +1892,7 @@ async fn check_commitment(
         assert!(commitment.data.leaf_index.is_none());
         assert!(commitment.data.nullifier.is_none());
         if cross_chain {
-            assert_eq!(commitment.data.contract_address, deposit.contract_address);
+            assert_eq!(commitment.data.contract_address, deposit.dst_pool_address);
             assert_eq!(commitment.data.status, CommitmentStatus::SrcSucceeded as i32);
             assert_eq!(
                 commitment.data.src_chain_block_number.unwrap(),

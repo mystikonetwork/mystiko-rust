@@ -1,9 +1,9 @@
 use crate::runtime;
 use mystiko_protos::api::handler::v1::{
     CountDepositRequest, CreateDepositRequest, DeleteDepositBatchRequest, DeleteDepositByFilterRequest,
-    DeleteDepositRequest, FindDepositByIdRequest, FindDepositRequest, QuoteRequest, SendRequest, SendWithGrpcRequest,
-    SummaryRequest, UpdateAllDepositRequest, UpdateDepositBatchRequest, UpdateDepositByFilterRequest,
-    UpdateDepositRequest,
+    DeleteDepositRequest, FindDepositByIdRequest, FindDepositRequest, FixDepositStatusRequest, QuoteRequest,
+    SendRequest, SendWithGrpcRequest, SummaryRequest, UpdateAllDepositRequest, UpdateDepositBatchRequest,
+    UpdateDepositByFilterRequest, UpdateDepositRequest,
 };
 use mystiko_protos::api::v1::{ApiResponse, DepositError};
 use mystiko_protos::storage::v1::ColumnValue;
@@ -66,6 +66,22 @@ where
         Ok(message) => {
             if let Some(options) = message.options {
                 return runtime().block_on(internal::send(options));
+            }
+            ApiResponse::unknown_error("unexpected message")
+        }
+        Err(err) => ApiResponse::error(DepositError::DeserializeMessageError, err),
+    }
+}
+
+pub fn fix_status<M>(message: M) -> ApiResponse
+where
+    M: TryInto<FixDepositStatusRequest>,
+    <M as TryInto<FixDepositStatusRequest>>::Error: std::error::Error + Send + Sync + 'static,
+{
+    match message.try_into() {
+        Ok(message) => {
+            if let Some(options) = message.options {
+                return runtime().block_on(internal::fix_status(options));
             }
             ApiResponse::unknown_error("unexpected message")
         }
@@ -286,11 +302,14 @@ mod internal {
     use crate::instance;
     use mystiko_core::{DepositHandler, GrpcSigner};
     use mystiko_protos::api::handler::v1::{
-        CountDepositResponse, CreateDepositResponse, FindDepositResponse, FindOneDepositResponse, QuoteResponse,
-        SendResponse, SummaryResponse, UpdateDepositBatchResponse, UpdateDepositResponse,
+        CountDepositResponse, CreateDepositResponse, FindDepositResponse, FindOneDepositResponse,
+        FixDepositStatusResponse, QuoteResponse, SendResponse, SummaryResponse, UpdateDepositBatchResponse,
+        UpdateDepositResponse,
     };
     use mystiko_protos::core::document::v1::Deposit;
-    use mystiko_protos::core::handler::v1::{CreateDepositOptions, QuoteDepositOptions, SendDepositOptions};
+    use mystiko_protos::core::handler::v1::{
+        CreateDepositOptions, FixDepositStatusOptions, QuoteDepositOptions, SendDepositOptions,
+    };
     use mystiko_protos::service::v1::ClientOptions;
     use mystiko_protos::storage::v1::QueryFilter;
     use mystiko_storage::ColumnValues;
@@ -363,6 +382,19 @@ mod internal {
                 },
                 Err(err) => ApiResponse::error(DepositError::GrpcConnectError, err),
             },
+            Err(err) => ApiResponse::error(DepositError::GetMystikoGuardError, err),
+        }
+    }
+    pub(crate) async fn fix_status(options: FixDepositStatusOptions) -> ApiResponse {
+        let mystiko_guard = instance().read().await;
+        match mystiko_guard.get() {
+            Ok(mystiko) => {
+                let result = mystiko.deposits.fix_status(options).await;
+                match result {
+                    Ok(deposit) => ApiResponse::success(FixDepositStatusResponse::builder().deposit(deposit).build()),
+                    Err(err) => ApiResponse::error(parse_deposit_error(&err), err),
+                }
+            }
             Err(err) => ApiResponse::error(DepositError::GetMystikoGuardError, err),
         }
     }

@@ -246,13 +246,13 @@ fn create_commitment(block_number: u64, deposit: &Document<Deposit>) -> Result<C
         (deposit.data.pool_address.clone(), CommitmentStatus::Queued as i32, None)
     } else {
         (
-            deposit.data.contract_address.clone(),
+            deposit.data.dst_pool_address.clone(),
             CommitmentStatus::SrcSucceeded as i32,
             Some(block_number),
         )
     };
     Ok(Commitment {
-        chain_id: deposit.data.chain_id,
+        chain_id: deposit.data.dst_chain_id,
         contract_address,
         bridge_type: deposit.data.bridge_type,
         commitment_hash: deposit.data.commitment_hash.clone(),
