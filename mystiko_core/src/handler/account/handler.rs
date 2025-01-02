@@ -3,7 +3,7 @@ use crate::{
     Wallets, WalletsError,
 };
 use async_trait::async_trait;
-use bip32::XPrv;
+use bip32::{ChildNumber, ExtendedPrivateKey, XPrv};
 use futures::TryFutureExt;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::error::CryptoError;
@@ -12,6 +12,7 @@ use mystiko_protocol::key::{combined_secret_key, full_public_key, separate_secre
 use mystiko_protocol::types::{EncSk, FullSk, VerifySk};
 use mystiko_protos::core::document::v1::Account as ProtoAccount;
 use mystiko_protos::core::handler::v1::{CreateAccountOptions, UpdateAccountOptions};
+use mystiko_protos::core::v1::MnemonicType;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage, StorageError};
 use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
@@ -340,12 +341,49 @@ where
         wallet: &Document<Wallet>,
         wallet_password: &str,
     ) -> Result<(VerifySk, EncSk, u32)> {
+        if wallet.data.mnemonic_type == MnemonicType::Web as i32 {
+            self.generate_web_secret_key(wallet, wallet_password).await
+        } else {
+            self.generate_rust_secret_key(wallet, wallet_password).await
+        }
+    }
+
+    async fn generate_web_secret_key(
+        &self,
+        wallet: &Document<Wallet>,
+        wallet_password: &str,
+    ) -> Result<(VerifySk, EncSk, u32)> {
+        let mnemonic = self.wallets.export_mnemonic(wallet_password).await?;
+        let master_seed = mnemonic.to_entropy();
+        let x_prv: XPrv = ExtendedPrivateKey::new(master_seed).unwrap();
+        let account_nonce = wallet.data.account_nonce;
+        let sk_verify = if account_nonce == 0 {
+            x_prv.private_key().to_bytes()
+        } else {
+            x_prv
+                .derive_child(ChildNumber::from(account_nonce))?
+                .private_key()
+                .to_bytes()
+        };
+        let sk_enc = x_prv
+            .derive_child(ChildNumber::from(account_nonce + 1))?
+            .private_key()
+            .to_bytes();
+
+        Ok((sk_verify.into(), sk_enc.into(), account_nonce + 2))
+    }
+
+    async fn generate_rust_secret_key(
+        &self,
+        wallet: &Document<Wallet>,
+        wallet_password: &str,
+    ) -> Result<(VerifySk, EncSk, u32)> {
         let mnemonic_words = self.wallets.export_mnemonic(wallet_password).await?;
         let master_seed = mnemonic_words.to_seed("");
         let sk_verify_path = format!("{}/{}/{}", DEFAULT_KEY_DERIVE_PATH, 0, wallet.data.account_nonce);
         let sk_enc_path = format!("{}/{}/{}", DEFAULT_KEY_DERIVE_PATH, 1, wallet.data.account_nonce);
-        let sk_verify = XPrv::derive_from_path(&master_seed, &sk_verify_path.parse()?)?;
-        let sk_enc = XPrv::derive_from_path(&master_seed, &sk_enc_path.parse()?)?;
+        let sk_verify = XPrv::derive_from_path(master_seed, &sk_verify_path.parse()?)?;
+        let sk_enc = XPrv::derive_from_path(master_seed, &sk_enc_path.parse()?)?;
         Ok((sk_verify.to_bytes(), sk_enc.to_bytes(), wallet.data.account_nonce + 1))
     }
 

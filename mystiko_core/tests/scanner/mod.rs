@@ -28,7 +28,8 @@ use mystiko_protocol::key::{separate_secret_keys, verification_secret_key};
 use mystiko_protocol::types::{FullSk, VerifySk};
 use mystiko_protocol::utils::compute_nullifier;
 use mystiko_protos::common::v1::BridgeType;
-use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions};
+use mystiko_protos::core::handler::v1::{CreateAccountOptions, CreateWalletOptions, MnemonicOptions};
+use mystiko_protos::core::v1::MnemonicType;
 use mystiko_protos::data::v1::CommitmentStatus;
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
@@ -137,7 +138,12 @@ async fn create_scanner(
     let wallet = Wallets::new(db.clone());
     let options = CreateWalletOptions::builder()
         .password(String::from(DEFAULT_WALLET_PASSWORD))
-        .mnemonic_phrase(mnemonic_phrase)
+        .mnemonic(mnemonic_phrase.map(|phrase| {
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Rust)
+                .mnemonic_phrase(phrase)
+                .build()
+        }))
         .build();
     let _ = wallet.create(&options).await.unwrap();
 

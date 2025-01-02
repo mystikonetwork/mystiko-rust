@@ -873,15 +873,15 @@ impl serde::Serialize for CreateWalletOptions {
         if !self.password.is_empty() {
             len += 1;
         }
-        if self.mnemonic_phrase.is_some() {
+        if self.mnemonic.is_some() {
             len += 1;
         }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.CreateWalletOptions", len)?;
         if !self.password.is_empty() {
             struct_ser.serialize_field("password", &self.password)?;
         }
-        if let Some(v) = self.mnemonic_phrase.as_ref() {
-            struct_ser.serialize_field("mnemonicPhrase", v)?;
+        if let Some(v) = self.mnemonic.as_ref() {
+            struct_ser.serialize_field("mnemonic", v)?;
         }
         struct_ser.end()
     }
@@ -894,14 +894,13 @@ impl<'de> serde::Deserialize<'de> for CreateWalletOptions {
     {
         const FIELDS: &[&str] = &[
             "password",
-            "mnemonic_phrase",
-            "mnemonicPhrase",
+            "mnemonic",
         ];
 
         #[allow(clippy::enum_variant_names)]
         enum GeneratedField {
             Password,
-            MnemonicPhrase,
+            Mnemonic,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -924,7 +923,7 @@ impl<'de> serde::Deserialize<'de> for CreateWalletOptions {
                     {
                         match value {
                             "password" => Ok(GeneratedField::Password),
-                            "mnemonicPhrase" | "mnemonic_phrase" => Ok(GeneratedField::MnemonicPhrase),
+                            "mnemonic" => Ok(GeneratedField::Mnemonic),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -945,7 +944,7 @@ impl<'de> serde::Deserialize<'de> for CreateWalletOptions {
                     V: serde::de::MapAccess<'de>,
             {
                 let mut password__ = None;
-                let mut mnemonic_phrase__ = None;
+                let mut mnemonic__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Password => {
@@ -954,17 +953,17 @@ impl<'de> serde::Deserialize<'de> for CreateWalletOptions {
                             }
                             password__ = Some(map.next_value()?);
                         }
-                        GeneratedField::MnemonicPhrase => {
-                            if mnemonic_phrase__.is_some() {
-                                return Err(serde::de::Error::duplicate_field("mnemonicPhrase"));
+                        GeneratedField::Mnemonic => {
+                            if mnemonic__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("mnemonic"));
                             }
-                            mnemonic_phrase__ = map.next_value()?;
+                            mnemonic__ = map.next_value()?;
                         }
                     }
                 }
                 Ok(CreateWalletOptions {
                     password: password__.unwrap_or_default(),
-                    mnemonic_phrase: mnemonic_phrase__,
+                    mnemonic: mnemonic__,
                 })
             }
         }
@@ -2347,6 +2346,118 @@ impl<'de> serde::Deserialize<'de> for GasRelayer {
             }
         }
         deserializer.deserialize_struct("mystiko.core.handler.v1.GasRelayer", FIELDS, GeneratedVisitor)
+    }
+}
+impl serde::Serialize for MnemonicOptions {
+    #[allow(deprecated)]
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+        let mut len = 0;
+        if !self.mnemonic_phrase.is_empty() {
+            len += 1;
+        }
+        if self.mnemonic_type != 0 {
+            len += 1;
+        }
+        let mut struct_ser = serializer.serialize_struct("mystiko.core.handler.v1.MnemonicOptions", len)?;
+        if !self.mnemonic_phrase.is_empty() {
+            struct_ser.serialize_field("mnemonicPhrase", &self.mnemonic_phrase)?;
+        }
+        if self.mnemonic_type != 0 {
+            let v = super::super::v1::MnemonicType::from_i32(self.mnemonic_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.mnemonic_type)))?;
+            struct_ser.serialize_field("mnemonicType", &v)?;
+        }
+        struct_ser.end()
+    }
+}
+impl<'de> serde::Deserialize<'de> for MnemonicOptions {
+    #[allow(deprecated)]
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        const FIELDS: &[&str] = &[
+            "mnemonic_phrase",
+            "mnemonicPhrase",
+            "mnemonic_type",
+            "mnemonicType",
+        ];
+
+        #[allow(clippy::enum_variant_names)]
+        enum GeneratedField {
+            MnemonicPhrase,
+            MnemonicType,
+        }
+        impl<'de> serde::Deserialize<'de> for GeneratedField {
+            fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                struct GeneratedVisitor;
+
+                impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+                    type Value = GeneratedField;
+
+                    fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        write!(formatter, "expected one of: {:?}", &FIELDS)
+                    }
+
+                    #[allow(unused_variables)]
+                    fn visit_str<E>(self, value: &str) -> std::result::Result<GeneratedField, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            "mnemonicPhrase" | "mnemonic_phrase" => Ok(GeneratedField::MnemonicPhrase),
+                            "mnemonicType" | "mnemonic_type" => Ok(GeneratedField::MnemonicType),
+                            _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
+                        }
+                    }
+                }
+                deserializer.deserialize_identifier(GeneratedVisitor)
+            }
+        }
+        struct GeneratedVisitor;
+        impl<'de> serde::de::Visitor<'de> for GeneratedVisitor {
+            type Value = MnemonicOptions;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("struct mystiko.core.handler.v1.MnemonicOptions")
+            }
+
+            fn visit_map<V>(self, mut map: V) -> std::result::Result<MnemonicOptions, V::Error>
+                where
+                    V: serde::de::MapAccess<'de>,
+            {
+                let mut mnemonic_phrase__ = None;
+                let mut mnemonic_type__ = None;
+                while let Some(k) = map.next_key()? {
+                    match k {
+                        GeneratedField::MnemonicPhrase => {
+                            if mnemonic_phrase__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("mnemonicPhrase"));
+                            }
+                            mnemonic_phrase__ = Some(map.next_value()?);
+                        }
+                        GeneratedField::MnemonicType => {
+                            if mnemonic_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("mnemonicType"));
+                            }
+                            mnemonic_type__ = Some(map.next_value::<super::super::v1::MnemonicType>()? as i32);
+                        }
+                    }
+                }
+                Ok(MnemonicOptions {
+                    mnemonic_phrase: mnemonic_phrase__.unwrap_or_default(),
+                    mnemonic_type: mnemonic_type__.unwrap_or_default(),
+                })
+            }
+        }
+        deserializer.deserialize_struct("mystiko.core.handler.v1.MnemonicOptions", FIELDS, GeneratedVisitor)
     }
 }
 impl serde::Serialize for QuoteDepositOptions {
