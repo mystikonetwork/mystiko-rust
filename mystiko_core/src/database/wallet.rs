@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(CollectionBuilder, Clone, PartialEq, Debug, Deserialize, Serialize)]
 pub struct Wallet {
+    pub mnemonic_type: i32,
     pub encrypted_entropy: String,
     pub hashed_password: String,
     pub account_nonce: u32,
@@ -17,6 +18,7 @@ impl Wallet {
             proto.created_at,
             proto.updated_at,
             Wallet {
+                mnemonic_type: proto.mnemonic_type,
                 encrypted_entropy: proto.encrypted_entropy,
                 hashed_password: proto.hashed_password,
                 account_nonce: proto.account_nonce,
@@ -29,6 +31,7 @@ impl Wallet {
             .id(wallet.id)
             .created_at(wallet.created_at)
             .updated_at(wallet.updated_at)
+            .mnemonic_type(wallet.data.mnemonic_type)
             .encrypted_entropy(wallet.data.encrypted_entropy)
             .hashed_password(wallet.data.hashed_password)
             .account_nonce(wallet.data.account_nonce)

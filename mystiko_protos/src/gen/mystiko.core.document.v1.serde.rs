@@ -1781,6 +1781,9 @@ impl serde::Serialize for Wallet {
         if self.account_nonce != 0 {
             len += 1;
         }
+        if self.mnemonic_type != 0 {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.core.document.v1.Wallet", len)?;
         if !self.id.is_empty() {
             struct_ser.serialize_field("id", &self.id)?;
@@ -1799,6 +1802,11 @@ impl serde::Serialize for Wallet {
         }
         if self.account_nonce != 0 {
             struct_ser.serialize_field("accountNonce", &self.account_nonce)?;
+        }
+        if self.mnemonic_type != 0 {
+            let v = super::super::v1::MnemonicType::from_i32(self.mnemonic_type)
+                .ok_or_else(|| serde::ser::Error::custom(format!("Invalid variant {}", self.mnemonic_type)))?;
+            struct_ser.serialize_field("mnemonicType", &v)?;
         }
         struct_ser.end()
     }
@@ -1821,6 +1829,8 @@ impl<'de> serde::Deserialize<'de> for Wallet {
             "hashedPassword",
             "account_nonce",
             "accountNonce",
+            "mnemonic_type",
+            "mnemonicType",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1831,6 +1841,7 @@ impl<'de> serde::Deserialize<'de> for Wallet {
             EncryptedEntropy,
             HashedPassword,
             AccountNonce,
+            MnemonicType,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1858,6 +1869,7 @@ impl<'de> serde::Deserialize<'de> for Wallet {
                             "encryptedEntropy" | "encrypted_entropy" => Ok(GeneratedField::EncryptedEntropy),
                             "hashedPassword" | "hashed_password" => Ok(GeneratedField::HashedPassword),
                             "accountNonce" | "account_nonce" => Ok(GeneratedField::AccountNonce),
+                            "mnemonicType" | "mnemonic_type" => Ok(GeneratedField::MnemonicType),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1883,6 +1895,7 @@ impl<'de> serde::Deserialize<'de> for Wallet {
                 let mut encrypted_entropy__ = None;
                 let mut hashed_password__ = None;
                 let mut account_nonce__ = None;
+                let mut mnemonic_type__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Id => {
@@ -1927,6 +1940,12 @@ impl<'de> serde::Deserialize<'de> for Wallet {
                                 Some(map.next_value::<::pbjson::private::NumberDeserialize<_>>()?.0)
                             ;
                         }
+                        GeneratedField::MnemonicType => {
+                            if mnemonic_type__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("mnemonicType"));
+                            }
+                            mnemonic_type__ = Some(map.next_value::<super::super::v1::MnemonicType>()? as i32);
+                        }
                     }
                 }
                 Ok(Wallet {
@@ -1936,6 +1955,7 @@ impl<'de> serde::Deserialize<'de> for Wallet {
                     encrypted_entropy: encrypted_entropy__.unwrap_or_default(),
                     hashed_password: hashed_password__.unwrap_or_default(),
                     account_nonce: account_nonce__.unwrap_or_default(),
+                    mnemonic_type: mnemonic_type__.unwrap_or_default(),
                 })
             }
         }

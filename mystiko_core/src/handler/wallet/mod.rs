@@ -3,7 +3,7 @@ mod handler;
 pub use handler::*;
 
 use async_trait::async_trait;
-use bip32::Mnemonic;
+use bip39::Mnemonic;
 
 #[async_trait]
 pub trait WalletHandler<W, C>: Send + Sync {

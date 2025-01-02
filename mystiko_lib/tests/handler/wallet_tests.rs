@@ -1,13 +1,13 @@
 use crate::{extract_data, setup};
-use bip32::secp256k1::elliptic_curve::rand_core::OsRng;
-use bip32::{Language, Mnemonic};
+use bip39::Mnemonic;
 use mystiko_lib::wallet::{check_current, check_password, create, export_mnemonic_phrase, update_password};
 use mystiko_protos::api::handler::v1::{
     CheckCurrentResponse, CheckPasswordRequest, CreateWalletRequest, CreateWalletResponse, ExportMnemonicPhraseRequest,
     ExportMnemonicPhraseResponse, UpdatePasswordRequest,
 };
 use mystiko_protos::api::v1::WalletError;
-use mystiko_protos::core::handler::v1::CreateWalletOptions;
+use mystiko_protos::core::handler::v1::{CreateWalletOptions, MnemonicOptions};
+use mystiko_protos::core::v1::MnemonicType;
 use serial_test::serial;
 
 #[test]
@@ -32,10 +32,16 @@ fn test_create() {
 #[serial]
 fn test_create_with_mnemonic() {
     setup(None);
-    let mnemonic = Mnemonic::random(OsRng, Language::English);
+    let mnemonic = Mnemonic::generate(24).unwrap();
+    let mnemonic_phrase = mnemonic.words().collect::<Vec<&str>>().join(" ");
     let options = CreateWalletOptions::builder()
         .password("P@ssw0rd".to_string())
-        .mnemonic_phrase(mnemonic.phrase().to_string())
+        .mnemonic(
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Rust as i32)
+                .mnemonic_phrase(mnemonic_phrase)
+                .build(),
+        )
         .build();
     let response = create(CreateWalletRequest::builder().options(options).build());
     assert!(response.code.unwrap().success);

@@ -1,17 +1,19 @@
 use crate::{Database, FromContext, MystikoContext, MystikoError, Wallet, WalletHandler};
 use async_trait::async_trait;
-use bip32::{Language, Mnemonic, KEY_SIZE};
+use bip39::Mnemonic;
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use mystiko_crypto::crypto::{decrypt_symmetric, encrypt_symmetric};
 use mystiko_crypto::error::CryptoError;
 use mystiko_crypto::hash::checksum;
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
 use mystiko_protos::core::handler::v1::CreateWalletOptions;
+use mystiko_protos::core::v1::MnemonicType;
 use mystiko_protos::storage::v1::{ConditionOperator, Order, OrderBy, QueryFilter};
 use mystiko_storage::{Document, DocumentColumn, StatementFormatter, Storage, StorageError};
-use mystiko_utils::hex::{decode_hex_with_length, encode_hex};
-use rand_core::OsRng;
+use mystiko_utils::hex::{decode_hex, encode_hex};
 use regex::Regex;
+use std::str::FromStr;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -30,6 +32,9 @@ const PASSWORD_HINT: &str = "\
     one special character in [#?!@$%^&*-], \
     and the length should be as least 8";
 
+const MNEMONIC_WEB_PHRASE_WORD_COUNT: usize = 12;
+const MNEMONIC_RUST_PHRASE_WORD_COUNT: usize = 24;
+
 #[derive(Debug)]
 pub struct Wallets<F: StatementFormatter, S: Storage> {
     db: Arc<Database<F, S>>,
@@ -44,7 +49,7 @@ pub enum WalletsError {
     #[error(transparent)]
     HexStringError(#[from] rustc_hex::FromHexError),
     #[error(transparent)]
-    MnemonicError(#[from] bip32::Error),
+    MnemonicError(#[from] bip39::Error),
     #[error("invalid password: {0:?}")]
     InvalidPasswordError(String),
     #[error("password is wrong")]
@@ -75,14 +80,29 @@ where
 
     async fn create(&self, options: &CreateWalletOptions) -> Result<ProtoWallet> {
         validate_password(&options.password)?;
-        let mnemonic = if let Some(mnemonic_words) = &options.mnemonic_phrase {
-            Mnemonic::new(mnemonic_words, Language::English)?
+        let (mnemonic, mnemonic_type) = if let Some(options) = &options.mnemonic {
+            let mnemonic = Mnemonic::from_str(&options.mnemonic_phrase)?;
+            let word_count = mnemonic.words().collect_vec().len();
+            let mnemonic_type = if options.mnemonic_type == MnemonicType::Web as i32 {
+                if word_count != MNEMONIC_WEB_PHRASE_WORD_COUNT {
+                    return Err(WalletsError::MnemonicError(bip39::Error::BadWordCount(word_count)));
+                }
+                MnemonicType::Web as i32
+            } else {
+                if word_count != MNEMONIC_RUST_PHRASE_WORD_COUNT {
+                    return Err(WalletsError::MnemonicError(bip39::Error::BadWordCount(word_count)));
+                }
+                MnemonicType::Rust as i32
+            };
+            (mnemonic, mnemonic_type)
         } else {
-            Mnemonic::random(OsRng, Language::English)
+            let mnemonic = Mnemonic::generate(MNEMONIC_RUST_PHRASE_WORD_COUNT)?;
+            (mnemonic, MnemonicType::Rust as i32)
         };
-        let encrypted_entropy = encrypt_symmetric(&options.password, &encode_hex(mnemonic.entropy()))?;
+        let encrypted_entropy = encrypt_symmetric(&options.password, &encode_hex(mnemonic.to_entropy()))?;
         let hashed_password = checksum(&options.password, None)?;
         let wallet = Wallet {
+            mnemonic_type,
             hashed_password,
             encrypted_entropy,
             account_nonce: 0,
@@ -125,12 +145,14 @@ where
     async fn export_mnemonic(&self, password: &str) -> Result<Mnemonic> {
         let wallet = self.check_password(password).await?;
         let entropy_string = decrypt_symmetric(password, &wallet.encrypted_entropy)?;
-        let entropy: [u8; KEY_SIZE] = decode_hex_with_length(entropy_string)?;
-        Ok(Mnemonic::from_entropy(entropy, Language::English))
+        let entropy = decode_hex(entropy_string)?;
+        Ok(Mnemonic::from_entropy(&entropy)?)
     }
 
     async fn export_mnemonic_phrase(&self, password: &str) -> Result<String> {
-        Ok(self.export_mnemonic(password).await?.phrase().to_string())
+        let mnemonic = self.export_mnemonic(password).await?;
+        let mnemonic_phrase = mnemonic.words().collect::<Vec<&str>>().join(" ");
+        Ok(mnemonic_phrase)
     }
 }
 

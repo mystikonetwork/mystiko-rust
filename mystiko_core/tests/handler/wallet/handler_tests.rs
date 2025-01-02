@@ -1,7 +1,11 @@
 use crate::common::create_database;
-use bip32::{Language, Mnemonic};
+use bip32::{Language, Mnemonic as MnemonicBip32};
+use bip39::Mnemonic as MnemonicBi39;
+use itertools::Itertools;
+use mystiko_core::WalletsError::MnemonicError;
 use mystiko_core::{WalletHandler, Wallets};
-use mystiko_protos::core::handler::v1::CreateWalletOptions;
+use mystiko_protos::core::handler::v1::{CreateWalletOptions, MnemonicOptions};
+use mystiko_protos::core::v1::MnemonicType;
 use mystiko_storage::SqlStatementFormatter;
 use mystiko_storage_sqlite::SqliteStorage;
 use rand_core::OsRng;
@@ -21,20 +25,78 @@ async fn test_create() {
         .build();
     let wallet = handler.create(&options).await.unwrap();
     assert_eq!(handler.check_current().await.unwrap(), wallet);
+    assert_eq!(wallet.mnemonic_type, MnemonicType::Rust as i32);
 }
 
 #[tokio::test]
-async fn test_create_with_mnemonic() {
+async fn test_create_with_web_mnemonic() {
     let handler = setup().await;
-    let mnemonic = Mnemonic::random(OsRng, Language::English);
+    let mnemonic = MnemonicBi39::generate(24).unwrap();
     let options = CreateWalletOptions::builder()
         .password(String::from("P@ssw0rd"))
-        .mnemonic_phrase(mnemonic.phrase().to_string())
+        .mnemonic(
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Web as i32)
+                .mnemonic_phrase(mnemonic.words().collect_vec().iter().join(" ").to_string())
+                .build(),
+        )
         .build();
-    handler.create(&options).await.unwrap();
+    let result = handler.create(&options).await;
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        MnemonicError(bip39::Error::BadWordCount(24)).to_string()
+    );
+
+    let mnemonic = MnemonicBi39::generate(12).unwrap();
+    let options = CreateWalletOptions::builder()
+        .password(String::from("P@ssw0rd"))
+        .mnemonic(
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Web as i32)
+                .mnemonic_phrase(mnemonic.words().collect_vec().iter().join(" ").to_string())
+                .build(),
+        )
+        .build();
+    let wallet = handler.create(&options).await.unwrap();
+    let phrase = mnemonic.words().collect_vec().iter().join(" ").to_string();
+    assert_eq!(handler.export_mnemonic_phrase("P@ssw0rd").await.unwrap(), phrase);
+    assert_eq!(wallet.mnemonic_type, MnemonicType::Web as i32);
+}
+
+#[tokio::test]
+async fn test_create_with_rust_mnemonic() {
+    let handler = setup().await;
+    let mnemonic = MnemonicBip32::random(OsRng, Language::English);
+    let options = CreateWalletOptions::builder()
+        .password(String::from("P@ssw0rd"))
+        .mnemonic(
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Rust as i32)
+                .mnemonic_phrase(mnemonic.phrase().to_string())
+                .build(),
+        )
+        .build();
+    let wallet = handler.create(&options).await.unwrap();
     assert_eq!(
         handler.export_mnemonic_phrase("P@ssw0rd").await.unwrap(),
         mnemonic.phrase().to_string()
+    );
+    assert_eq!(wallet.mnemonic_type, MnemonicType::Rust as i32);
+
+    let mnemonic = MnemonicBi39::generate(12).unwrap();
+    let options = CreateWalletOptions::builder()
+        .password(String::from("P@ssw0rd"))
+        .mnemonic(
+            MnemonicOptions::builder()
+                .mnemonic_type(MnemonicType::Rust as i32)
+                .mnemonic_phrase(mnemonic.words().collect_vec().iter().join(" ").to_string())
+                .build(),
+        )
+        .build();
+    let result = handler.create(&options).await;
+    assert_eq!(
+        result.err().unwrap().to_string(),
+        MnemonicError(bip39::Error::BadWordCount(12)).to_string()
     );
 }
 
@@ -99,7 +161,7 @@ async fn test_export_mnemonic_words() {
     handler.create(&options).await.unwrap();
     assert!(handler.export_mnemonic_phrase("wrong_password").await.is_err());
     let mnemonic_words = handler.export_mnemonic_phrase("P@ssw0rd").await.unwrap();
-    assert!(Mnemonic::new(mnemonic_words, Language::English).is_ok());
+    assert!(MnemonicBip32::new(mnemonic_words, Language::English).is_ok());
 }
 
 #[tokio::test]

@@ -65,7 +65,7 @@ fn test_parse_account_error() {
 fn test_parse_wallet_error() {
     let e1: WalletsError = WalletsError::StorageError(StorageError::MissingDataError("_".to_string()));
     let e2: WalletsError = WalletsError::CryptoError(CryptoError::InternalError);
-    let e3: WalletsError = WalletsError::MnemonicError(bip32::Error::Decode);
+    let e3: WalletsError = WalletsError::MnemonicError(bip39::Error::BadWordCount(1));
     let e4: WalletsError = WalletsError::HexStringError(rustc_hex::FromHexError::InvalidHexLength);
     let e5: WalletsError = WalletsError::InvalidPasswordError("error".to_string());
     let e6: WalletsError = WalletsError::MismatchedPasswordError;

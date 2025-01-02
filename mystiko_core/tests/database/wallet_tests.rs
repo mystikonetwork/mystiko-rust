@@ -1,5 +1,6 @@
 use mystiko_core::{Wallet, WalletCollection, WalletColumn};
 use mystiko_protos::core::document::v1::Wallet as ProtoWallet;
+use mystiko_protos::core::v1::MnemonicType;
 use mystiko_protos::storage::v1::{ConditionOperator, QueryFilter, SubFilter};
 use mystiko_storage::{Collection, Document, SqlStatementFormatter};
 use mystiko_storage_sqlite::SqliteStorage;
@@ -22,6 +23,7 @@ async fn test_wallets_crud() {
     inserted_wallets.push(
         wallets
             .insert(&Wallet {
+                mnemonic_type: MnemonicType::Rust as i32,
                 encrypted_entropy: String::from("encrypted entropy 01"),
                 hashed_password: String::from("hashed password 01"),
                 account_nonce: 1,
@@ -33,11 +35,13 @@ async fn test_wallets_crud() {
         wallets
             .insert_batch(&[
                 Wallet {
+                    mnemonic_type: MnemonicType::Rust as i32,
                     encrypted_entropy: String::from("encrypted entropy 02"),
                     hashed_password: String::from("hashed password 02"),
                     account_nonce: 2,
                 },
                 Wallet {
+                    mnemonic_type: MnemonicType::Rust as i32,
                     encrypted_entropy: String::from("encrypted entropy 03"),
                     hashed_password: String::from("hashed password 03"),
                     account_nonce: 3,
@@ -99,6 +103,7 @@ async fn test_wallets_crud() {
     assert_eq!(wallets.count_all().await.unwrap(), 1);
     wallets
         .insert(&Wallet {
+            mnemonic_type: MnemonicType::Rust as i32,
             encrypted_entropy: String::from("encrypted entropy 01"),
             hashed_password: String::from("hashed password 01"),
             account_nonce: 1,
@@ -120,6 +125,7 @@ async fn test_wallet_serde() {
     let wallets = create_wallets().await;
     let wallet = wallets
         .insert(&Wallet {
+            mnemonic_type: MnemonicType::Rust as i32,
             encrypted_entropy: String::from("encrypted entropy 01"),
             hashed_password: String::from("hashed password 01"),
             account_nonce: 1,
@@ -158,6 +164,7 @@ fn test_into_proto() {
         1234567890u64,
         1234567891u64,
         Wallet {
+            mnemonic_type: MnemonicType::Rust as i32,
             encrypted_entropy: String::from("encrypted entropy 01"),
             hashed_password: String::from("hashed password 01"),
             account_nonce: 1u32,
