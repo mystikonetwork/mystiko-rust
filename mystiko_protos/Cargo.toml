@@ -41,9 +41,9 @@ proto_full = ["mystiko-api-config-v1","mystiko-api-handler-v1","mystiko-api-scan
 anyhow = { version = "1.0.69" }
 ethers-core = { version = "2.0.14", optional = true }
 http = { version = "0.2.9" }
-mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "da78078" }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629" }
 mystiko_protos_macros = { version = "0.1.0", path = "../mystiko_protos_macros" }
-mystiko_types = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "da78078" }
+mystiko_types = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
 num-bigint = { version = "0.4" }
 num-traits = { version = "0.2.16" }
@@ -58,7 +58,7 @@ typed-builder = { version = "0.15.2" }
 validator = { version = "0.16.0", optional = true }
 
 [dev-dependencies]
-mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "da78078", features = ["fs"] }
+mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629", features = ["fs"] }
 mystiko_protos = { version = "*", path = ".", features = ["proto_full", "grpc-server", "grpc-client", "validate", "ethers"] }
 rcgen = { version = "0.11.1" }
 tempfile = { version = "3.7.1" }
