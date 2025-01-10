@@ -123,7 +123,7 @@ mod internal {
     use mystiko_core::ScannerHandler;
     use mystiko_protos::api::scanner::v1::{
         AssetsResponse, BalanceResponse, ChainAssetsResponse, ScannerAssetImportResponse, ScannerResetResponse,
-        ScannerScanResponse,
+        ScannerScanResponse, ScannerSyncResponse,
     };
     use mystiko_protos::api::v1::{ApiResponse, ScannerError};
     use mystiko_protos::core::scanner::v1::{
@@ -136,7 +136,7 @@ mod internal {
             Ok(mystiko) => {
                 let result = mystiko.scanner.sync(options).await;
                 match result {
-                    Ok(balance) => ApiResponse::success(BalanceResponse::builder().result(balance).build()),
+                    Ok(r) => ApiResponse::success(ScannerSyncResponse::builder().result(r).build()),
                     Err(err) => ApiResponse::error(parse_scanner_error(&err), err),
                 }
             }

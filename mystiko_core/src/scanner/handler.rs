@@ -11,6 +11,7 @@ use mystiko_ethers::Providers;
 use mystiko_protos::core::scanner::v1::{
     AssetImportOptions, AssetImportResult, AssetsByChain, AssetsOptions, BalanceOptions, BalanceResult,
     ScannerResetOptions, ScannerResetResult, ScannerScanOptions, ScannerScanResult, ScannerSyncOptions,
+    ScannerSyncResult,
 };
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
@@ -83,6 +84,7 @@ where
 impl<F, S, C, Q, P>
     ScannerHandler<
         ScannerSyncOptions,
+        ScannerSyncResult,
         ScannerScanOptions,
         ScannerScanResult,
         ScannerResetOptions,
@@ -103,7 +105,7 @@ where
     ScannerError: From<C::Error>,
 {
     type Error = ScannerError;
-    async fn sync(&self, options: ScannerSyncOptions) -> Result<BalanceResult, Self::Error> {
+    async fn sync(&self, options: ScannerSyncOptions) -> Result<ScannerSyncResult, Self::Error> {
         self.asset_sync(options).await
     }
 
