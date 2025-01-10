@@ -167,7 +167,7 @@ where
                         .data
                         .nullifier
                         .as_ref()
-                        .map_or(false, |n| nullifiers.contains(n))
+                        .is_some_and(|n| nullifiers.contains(n))
                 })
                 .map(|mut commitment| {
                     commitment.data.spent = true;

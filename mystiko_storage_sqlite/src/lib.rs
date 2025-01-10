@@ -96,7 +96,7 @@ impl Storage for SqliteStorage {
 }
 
 impl SqliteStorage {
-    async fn execute_query<'a>(&self, query: Query<'a>) -> Result<(), StorageError> {
+    async fn execute_query(&self, query: Query<'_>) -> Result<(), StorageError> {
         match &self.connection {
             SqliteConnection::Single(connection) => {
                 let mut connection = connection.lock().await;
@@ -115,7 +115,7 @@ impl SqliteStorage {
         Ok(())
     }
 
-    async fn execute_fetch<'a>(&self, query: Query<'a>) -> Result<Vec<sqlx::sqlite::SqliteRow>, StorageError> {
+    async fn execute_fetch(&self, query: Query<'_>) -> Result<Vec<sqlx::sqlite::SqliteRow>, StorageError> {
         let rows = match &self.connection {
             SqliteConnection::Single(connection) => {
                 let mut connection = connection.lock().await;

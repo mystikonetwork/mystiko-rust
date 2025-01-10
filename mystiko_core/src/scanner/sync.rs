@@ -132,7 +132,7 @@ where
         let mut failed_cms = Vec::new();
         for commitment in commitments.iter() {
             let result = self.sync_one_from_provider(accounts, commitment).await;
-            if result.map_or(false, |r| !r) {
+            if result.is_ok_and(|r| !r) {
                 failed_cms.push(commitment.clone());
             }
         }

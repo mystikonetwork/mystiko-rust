@@ -56,9 +56,9 @@ where
     H: DataHandler<R>,
     P: Providers,
 {
-    async fn check_commitment<'a>(
+    async fn check_commitment(
         &self,
-        data: &ValidateOriginalData<'a, R>,
+        data: &ValidateOriginalData<'_, R>,
         merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
@@ -128,9 +128,9 @@ where
         }
     }
 
-    async fn check_commitment_count<'a>(
+    async fn check_commitment_count(
         &self,
-        data: &ValidateOriginalData<'a, R>,
+        data: &ValidateOriginalData<'_, R>,
         merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
@@ -161,7 +161,7 @@ where
         Ok(())
     }
 
-    async fn check_commitment_count_with_handler<'a>(
+    async fn check_commitment_count_with_handler(
         &self,
         total: u64,
         merged_data: &ValidateMergedData,
@@ -182,9 +182,9 @@ where
         Ok(())
     }
 
-    async fn check_nullifier<'a>(
+    async fn check_nullifier(
         &self,
-        data: &ValidateOriginalData<'a, R>,
+        data: &ValidateOriginalData<'_, R>,
         merged_data: &ValidateMergedData,
         contract: &CommitmentPool<Provider>,
     ) -> CheckerResult<()> {
