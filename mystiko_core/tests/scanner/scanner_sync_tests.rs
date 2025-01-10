@@ -62,11 +62,12 @@ async fn test_sync_commitment_from_provider() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let result = scanner.sync(options).await.unwrap();
-    assert_eq!(result.balances.len(), 1);
-    assert_eq!(result.balances[0].asset_symbol, "MTT");
-    assert_eq!(result.balances[0].pending, pending);
-    assert_eq!(result.balances[0].unspent, 0.0);
-    assert_eq!(result.balances[0].spent, None);
+    assert_eq!(result.results.len(), 1);
+    assert_eq!(result.results[0].balances.len(), 1);
+    assert_eq!(result.results[0].balances[0].asset_symbol, "MTT");
+    assert_eq!(result.results[0].balances[0].pending, pending);
+    assert_eq!(result.results[0].balances[0].unspent, 0.0);
+    assert_eq!(result.results[0].balances[0].spent, None);
 
     let cms = db.commitments.find_all().await.unwrap();
     assert_eq!(cms.len(), 1);
@@ -134,11 +135,12 @@ async fn test_sync_commitment_by_commitment_hash() {
         .wallet_password(DEFAULT_WALLET_PASSWORD.to_string())
         .build();
     let result = scanner.sync(options).await.unwrap();
-    assert_eq!(result.balances.len(), 1);
-    assert_eq!(result.balances[0].asset_symbol, "MTT");
-    assert_eq!(result.balances[0].pending, pending);
-    assert_eq!(result.balances[0].unspent, 0.0);
-    assert_eq!(result.balances[0].spent, None);
+    assert_eq!(result.results.len(), 1);
+    assert_eq!(result.results[0].balances.len(), 1);
+    assert_eq!(result.results[0].balances[0].asset_symbol, "MTT");
+    assert_eq!(result.results[0].balances[0].pending, pending);
+    assert_eq!(result.results[0].balances[0].unspent, 0.0);
+    assert_eq!(result.results[0].balances[0].spent, None);
 
     let cms = db.commitments.find_all().await.unwrap();
     assert_eq!(cms.len(), 1);
@@ -194,11 +196,12 @@ async fn test_sync_commitment_status() {
         .build();
     let result = scanner.sync(options).await.unwrap();
     let unspent = decimal_to_number::<f64, BigUint>(&amount2, Some(18)).unwrap();
-    assert_eq!(result.balances.len(), 1);
-    assert_eq!(result.balances[0].asset_symbol, "MTT");
-    assert_eq!(result.balances[0].pending, 0.0);
-    assert!((unspent - result.balances[0].unspent).abs() < 1e-14);
-    assert_eq!(result.balances[0].spent, None);
+    assert_eq!(result.results.len(), 1);
+    assert_eq!(result.results[0].balances.len(), 1);
+    assert_eq!(result.results[0].balances[0].asset_symbol, "MTT");
+    assert_eq!(result.results[0].balances[0].pending, 0.0);
+    assert!((unspent - result.results[0].balances[0].unspent).abs() < 1e-14);
+    assert_eq!(result.results[0].balances[0].spent, None);
 
     let cms = db.commitments.find_all().await.unwrap();
     assert_eq!(cms.len(), 2);

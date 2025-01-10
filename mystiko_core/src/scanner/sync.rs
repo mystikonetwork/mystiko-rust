@@ -6,7 +6,7 @@ use crate::{
 use anyhow::anyhow;
 use log::error;
 use mystiko_ethers::Providers;
-use mystiko_protos::core::scanner::v1::{BalanceOptions, BalanceResult, ScannerSyncOptions};
+use mystiko_protos::core::scanner::v1::{AccountBalanceResult, BalanceOptions, ScannerSyncOptions, ScannerSyncResult};
 use mystiko_protos::data::v1::{Commitment as ProtosCommitment, CommitmentStatus, Nullifier as ProtosNullifier};
 use mystiko_protos::sequencer::v1::{FetchChainRequest, FetchChainResponse};
 use mystiko_protos::storage::v1::{Condition, SubFilter};
@@ -32,7 +32,7 @@ where
     P: Providers + 'static,
     ScannerError: From<C::Error>,
 {
-    pub(crate) async fn asset_sync(&self, options: ScannerSyncOptions) -> Result<BalanceResult, ScannerError> {
+    pub(crate) async fn asset_sync(&self, options: ScannerSyncOptions) -> Result<ScannerSyncResult, ScannerError> {
         self.wallets.check_password(&options.wallet_password).await?;
         let accounts = self.build_filter_accounts(&[]).await?;
         let scan_accounts = self.build_scan_accounts(&accounts, &options.wallet_password).await?;
@@ -83,7 +83,7 @@ where
             self.sync_commitment_status(&options, cms_to_update).await;
         }
 
-        self.balance(BalanceOptions::builder().build()).await
+        self.calc_accounts_balance(&options, &scan_accounts).await
     }
 
     async fn get_scan_commitments(
@@ -132,7 +132,7 @@ where
         let mut failed_cms = Vec::new();
         for commitment in commitments.iter() {
             let result = self.sync_one_from_provider(accounts, commitment).await;
-            if result.map_or(false, |r| !r) {
+            if result.is_ok_and(|r| !r) {
                 failed_cms.push(commitment.clone());
             }
         }
@@ -262,5 +262,51 @@ where
         }
 
         Ok(())
+    }
+
+    async fn calc_accounts_balance(
+        &self,
+        options: &ScannerSyncOptions,
+        accounts: &[ScanningAccount],
+    ) -> Result<ScannerSyncResult, ScannerError> {
+        let concurrency = std::cmp::max(1, options.concurrency.unwrap_or_default()) as usize;
+        let chunk_nums = accounts.len().div_ceil(concurrency);
+        let chunks = accounts.chunks(chunk_nums);
+        let mut group_task = Vec::with_capacity(chunks.len());
+        for chunk in chunks {
+            group_task.push(self.calc_batch_account_balance(chunk));
+        }
+        let results: Vec<AccountBalanceResult> = futures::future::try_join_all(group_task)
+            .await?
+            .into_iter()
+            .flatten()
+            .collect();
+        Ok(ScannerSyncResult::builder().results(results).build())
+    }
+
+    async fn calc_batch_account_balance(
+        &self,
+        account: &[ScanningAccount],
+    ) -> Result<Vec<AccountBalanceResult>, ScannerError> {
+        let mut results = Vec::new();
+        for account in account.iter() {
+            let result = self.calc_account_balance(account).await?;
+            results.push(result);
+        }
+        Ok(results)
+    }
+
+    async fn calc_account_balance(&self, account: &ScanningAccount) -> Result<AccountBalanceResult, ScannerError> {
+        let result = self
+            .balance(
+                BalanceOptions::builder()
+                    .shielded_addresses(vec![account.shielded_address.address()])
+                    .build(),
+            )
+            .await?;
+        Ok(AccountBalanceResult::builder()
+            .shielded_addresses(account.shielded_address.address())
+            .balances(result.balances)
+            .build())
     }
 }

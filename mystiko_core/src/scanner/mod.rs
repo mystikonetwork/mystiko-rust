@@ -10,10 +10,10 @@ pub use handler::*;
 use async_trait::async_trait;
 
 #[async_trait]
-pub trait ScannerHandler<YO, SO, SR, RO, RR, IO, IR, BO, BR, AO, AR>: Send + Sync {
+pub trait ScannerHandler<YO, YR, SO, SR, RO, RR, IO, IR, BO, BR, AO, AR>: Send + Sync {
     type Error;
 
-    async fn sync(&self, options: YO) -> Result<BR, Self::Error>;
+    async fn sync(&self, options: YO) -> Result<YR, Self::Error>;
 
     async fn scan(&self, options: SO) -> Result<SR, Self::Error>;
 
