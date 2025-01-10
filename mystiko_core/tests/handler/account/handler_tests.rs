@@ -414,10 +414,11 @@ async fn test_update_encryption_wrong_wallet_password() {
 }
 
 #[tokio::test]
-async fn test_create_wallet_with_web_mnemonic() {
+async fn test_create_wallet_with_web_mnemonic1() {
     let wallet_password = "P@ssw0rd";
     let mnemonic_phrase = "blind race civil nerve pulse awkward cluster squirrel thumb stove cup client";
     let (account_handler, wallet_handler, db) = setup().await;
+    db.wallets.delete_all().await.unwrap();
     let wallet_options = CreateWalletOptions::builder()
         .mnemonic(
             MnemonicOptions::builder()
@@ -428,6 +429,7 @@ async fn test_create_wallet_with_web_mnemonic() {
         .password(String::from(wallet_password))
         .build();
     let wallet = wallet_handler.create(&wallet_options).await.unwrap();
+    assert_eq!(wallet.account_nonce, 0);
 
     let private_key1 = "a9da6b0a337dc2073c8eae200293e5807296ea004e999a6c05628cf47a5a0cbe4a3d56192c1f7a732b72c20a2cd6aedd5c4974e51d3dad93b556f7277219c650";
     let public_key1 = "09d7f2d95639bbd3190077f6ce71721bf3ae4d7f482677260273f4fbf4014a1202f3c14d35551fe48f2e2e8ef36001d182fffc69aa675b65452ce0076853294987";
@@ -440,6 +442,8 @@ async fn test_create_wallet_with_web_mnemonic() {
     assert_eq!(full_sk_str1, private_key1);
     assert_eq!(account1.public_key, public_key1);
     assert_eq!(account1.shielded_address, shield_address1);
+    let wallet = db.wallets.find_by_id(&wallet.id).await.unwrap().unwrap();
+    assert_eq!(wallet.data.account_nonce, 2);
 
     let private_key2 = "466306666373289cb8691593694b14845368790be0a0609d060e0329ac027da78d08aa9ada9f96cbf6387e966b0d4908cb1f07d563294b2a618c485f4f31211f";
     let public_key2 = "4d98f9de3f7059e6e5937c7376bd63f92120db6f087e0464785e15e72776d008031bf0fd473f46988f231280e61278f7794ce66dade0633d5b93f936d4861abef3";
@@ -469,4 +473,54 @@ async fn test_create_wallet_with_web_mnemonic() {
     assert_eq!(full_sk_str102, private_key102);
     assert_eq!(account102.public_key, public_key102);
     assert_eq!(account102.shielded_address, shield_address102);
+}
+
+#[tokio::test]
+async fn test_create_wallet_with_web_mnemonic2() {
+    let wallet_password = "P@ssw0rd";
+    let mnemonic_phrases = [
+        "annual impulse you increase ocean dismiss scorpion alter return answer evil rug",
+        "cliff category tunnel vacant exact shiver grocery filter grunt opinion cross brief",
+        "truly husband margin jewel rural abandon scrap fever surface grace sentence mad",
+        "paper appear opinion mystery ethics mimic simple bright enemy orphan age plug",
+        "figure casual history choice dentist spy team change bus they cinnamon exile",
+    ];
+    let private_keys = [
+        "93f852e938ac13ed247c4bf58c74777097d1a0e93fe6a3c357e19e6ce80c9fb20d8eb390926ca6b3795ff11595b7c0682f8ea0402a9d810091675a0c87a1f83e",
+        "5112de849434a24e96c15ad31cd74b13ba81f843a3e4cb6ff91c0dd80615da87c50dffeeb12eff9ad311842aff48118469d0f7cbdb2e22aab32544dfe1314158",
+        "5e7ed3d44f753f522d20367c4c4a07bc5b0f0e6174654b42e1cdbe3ca24d00ba3f244626a6ff50e14145e023f6e9ad5c6c4cc1e49983d7c08439baeb32087662",
+        "6a6cde25b7bbc866033ab990777c679b9358bc08a5fe78eeab2c97813de3c0e9c7bf99bb16d1c99d38c529236bd7f6e830499fcf7997e30d8d19d7b807fe6ae6",
+        "9fd8088bb34b02c060242e4cd2cee15178f2465cef226e05aded9322e02ed0f6ecb50726eb9e15721f1c3cedb3a974fa6cc8bcc7435c15ee4b3c371fe8e996aa"
+    ];
+    let shield_addresses = [
+        "2TnrWGeqFansPuYYUh43QuWQ5tXTPSo71A8n8dZQ6zR2uYq6cruQjX1JsbNaVHZYtT5GgnLr5Y2gNgVM4xLp86yJA",
+        "ANEe3yv5GC9TCkhuRv4WfvsfgcQ2qHr7kMej7SjR8M1Qsx6HSBocyzz97VvUM2EwdDFnHWXn8D8TAoxZa2NwAfHFr",
+        "8b7fhqBMkPzx5sYKjzVANUQxpRHYmJeQwKRwL8jYWHFxB5teBPMB7vXFJgFVoKazRPKTLd6UWUBQfHmUzKiCiP9Ta",
+        "8SDy8aqjKYeBsozwgXmzmq8aEZpUFKYa4txZyDodzawTGcMi2ned7cQLQ4UFxdCvk8mZFDKr1n5writ62G72aA8tr",
+        "M3ZgK72gQFz7WJt4fpfqdxuE62ipd2nBNNxrM1cUH4x8VhnAw2scWmwC5kodMQxaLeyQZP5iVDckZEidhgvSbDCjv",
+    ];
+
+    for i in 0..mnemonic_phrases.len() {
+        let (account_handler, wallet_handler, db) = setup().await;
+        db.wallets.delete_all().await.unwrap();
+        let wallet_options = CreateWalletOptions::builder()
+            .mnemonic(
+                MnemonicOptions::builder()
+                    .mnemonic_type(MnemonicType::Web as i32)
+                    .mnemonic_phrase(mnemonic_phrases[i])
+                    .build(),
+            )
+            .password(String::from(wallet_password))
+            .build();
+        let wallet = wallet_handler.create(&wallet_options).await.unwrap();
+        assert_eq!(wallet.account_nonce, 0);
+
+        let account1 = account_handler
+            .create(&CreateAccountOptions::builder().wallet_password(wallet_password).build())
+            .await
+            .unwrap();
+        let full_sk_str1 = decrypt_symmetric(wallet_password, &account1.encrypted_secret_key).unwrap();
+        assert_eq!(full_sk_str1, private_keys[i]);
+        assert_eq!(account1.shielded_address, shield_addresses[i]);
+    }
 }
