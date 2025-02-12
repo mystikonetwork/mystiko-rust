@@ -20,24 +20,36 @@ use mystiko_storage::Document;
 use mystiko_types::CircuitType;
 use mystiko_utils::address::ethers_address_from_string;
 use mystiko_utils::convert::{biguint_to_u256, number_to_biguint_decimal, number_to_u256_decimal};
+use rstest::rstest;
 use std::sync::Arc;
 use typed_builder::TypedBuilder;
 
 #[tokio::test]
-async fn test_quote_withdraw_without_amount() {
+#[rstest]
+#[case(1.0, vec![], Some(AmountRange { min: 1.0, decimal_min: "10000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+#[case(3.0, vec![3.0], Some(AmountRange { min: 3.0, decimal_min: "30000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+#[case(4.0, vec![3.0, 4.0], Some(AmountRange { min: 4.0, decimal_min: "40000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+#[case(20.0, vec![3.0, 4.0, 7.0, 10.0, 13.0, 14.0],  None)]
+async fn test_quote_withdraw_without_amount(
+    #[case] min_rollup_fee: f64,
+    #[case] fixed_amounts: Vec<f64>,
+    #[case] amount_range: Option<AmountRange>,
+) {
     let test_options: QuoteTestOptions = QuoteTestOptions::builder()
         .chain_id(5_u64)
         .contract_address("0x223903804Ee95e264F74C88B4F8583429524593c".to_string())
-        .min_rollup_fee(3.0)
+        .min_rollup_fee(min_rollup_fee)
         .build();
     let context = QuoteTestContext::new(test_options).await;
     context.generate_commitments(&[3.0, 4.0, 10.0]).await;
+
     let quote_options = QuoteSpendOptions::builder()
         .chain_id(5_u64)
         .asset_symbol("MTT".to_string())
         .bridge_type(BridgeType::Loop as i32)
         .spend_type(SpendType::Withdraw as i32)
         .build();
+
     let expected_quote = SpendQuote {
         valid: true,
         asset_symbol: "MTT".to_string(),
@@ -46,30 +58,37 @@ async fn test_quote_withdraw_without_amount() {
         current_decimal_balance: "170000000000000000".to_string(),
         num_of_inputs: 2,
         num_of_outputs: 0,
-        min_rollup_fee: 3.0,
-        min_rollup_fee_decimal: "30000000000000000".to_string(),
+        min_rollup_fee,
+        min_rollup_fee_decimal: format!("{:.0}", min_rollup_fee * 1e16),
         rollup_fee_asset_symbol: "MTT".to_string(),
         rollup_fee_asset_decimals: 16,
-        fixed_amounts: vec![3.0],
-        fixed_decimal_amounts: vec!["30000000000000000".to_string()],
-        amount_range: Some(AmountRange {
-            min: 3.0,
-            decimal_min: "30000000000000000".to_string(),
-            max: 14.0,
-            decimal_max: "140000000000000000".to_string(),
-        }),
+        fixed_amounts: fixed_amounts.clone(),
+        fixed_decimal_amounts: fixed_amounts
+            .iter()
+            .map(|&amount| format!("{:.0}", amount * 1e16))
+            .collect(),
+        amount_range,
         ..Default::default()
     };
+
     let quote = context.handler.quote(quote_options.clone()).await.unwrap();
     assert_eq!(quote, expected_quote);
 }
 
 #[tokio::test]
-async fn test_quote_transfer_without_amount() {
+#[rstest]
+#[case(1.0, vec![], Some(AmountRange { min: 2.0, decimal_min: "20000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+#[case(3.0, vec![4.0], Some(AmountRange { min: 6.0, decimal_min: "60000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+#[case(4.0, vec![7.0], Some(AmountRange { min: 8.0, decimal_min: "80000000000000000".to_string(), max: 14.0, decimal_max: "140000000000000000".to_string() }))]
+async fn test_quote_transfer_without_amount(
+    #[case] min_rollup_fee: f64,
+    #[case] fixed_amounts: Vec<f64>,
+    #[case] amount_range: Option<AmountRange>,
+) {
     let test_options: QuoteTestOptions = QuoteTestOptions::builder()
         .chain_id(5_u64)
         .contract_address("0x223903804Ee95e264F74C88B4F8583429524593c".to_string())
-        .min_rollup_fee(3.0)
+        .min_rollup_fee(min_rollup_fee)
         .build();
     let context = QuoteTestContext::new(test_options).await;
     context.generate_commitments(&[3.0, 4.0, 10.0]).await;
@@ -87,18 +106,53 @@ async fn test_quote_transfer_without_amount() {
         current_decimal_balance: "170000000000000000".to_string(),
         num_of_inputs: 2,
         num_of_outputs: 1,
-        min_rollup_fee: 3.0,
-        min_rollup_fee_decimal: "30000000000000000".to_string(),
+        min_rollup_fee,
+        min_rollup_fee_decimal: format!("{:.0}", min_rollup_fee * 1e16),
         rollup_fee_asset_symbol: "MTT".to_string(),
         rollup_fee_asset_decimals: 16,
-        fixed_amounts: vec![4.0],
-        fixed_decimal_amounts: vec!["40000000000000000".to_string()],
-        amount_range: Some(AmountRange {
-            min: 6.0,
-            decimal_min: "60000000000000000".to_string(),
-            max: 14.0,
-            decimal_max: "140000000000000000".to_string(),
-        }),
+        fixed_amounts: fixed_amounts.clone(),
+        fixed_decimal_amounts: fixed_amounts
+            .iter()
+            .map(|&amount| format!("{:.0}", amount * 1e16))
+            .collect(),
+        amount_range,
+        ..Default::default()
+    };
+    let quote = context.handler.quote(quote_options.clone()).await.unwrap();
+    assert_eq!(quote, expected_quote);
+}
+
+#[tokio::test]
+async fn test_quote_transfer_without_amount2() {
+    let test_options: QuoteTestOptions = QuoteTestOptions::builder()
+        .chain_id(5_u64)
+        .contract_address("0x223903804Ee95e264F74C88B4F8583429524593c".to_string())
+        .min_rollup_fee(20.0)
+        .build();
+    let context = QuoteTestContext::new(test_options).await;
+    context.generate_commitments(&[3.0, 4.0, 10.0]).await;
+    let quote_options = QuoteSpendOptions::builder()
+        .chain_id(5_u64)
+        .asset_symbol("MTT".to_string())
+        .bridge_type(BridgeType::Loop as i32)
+        .spend_type(SpendType::Transfer as i32)
+        .build();
+    let expected_quote = SpendQuote {
+        valid: false,
+        invalid_code: Some(SpendInvalidCode::InvalidAmount as i32),
+        asset_symbol: "MTT".to_string(),
+        asset_decimals: 16,
+        current_balance: 17.0,
+        current_decimal_balance: "170000000000000000".to_string(),
+        num_of_inputs: 2,
+        num_of_outputs: 1,
+        min_rollup_fee: 20.0,
+        min_rollup_fee_decimal: "200000000000000000".to_string(),
+        rollup_fee_asset_symbol: "MTT".to_string(),
+        rollup_fee_asset_decimals: 16,
+        fixed_amounts: vec![],
+        fixed_decimal_amounts: vec![],
+        amount_range: None,
         ..Default::default()
     };
     let quote = context.handler.quote(quote_options.clone()).await.unwrap();
@@ -256,6 +310,13 @@ async fn test_quote_withdraw_with_amount() {
     expected_quote.selected_commitments = vec!["4".to_string(), "8".to_string()];
     quote = context.handler.quote(quote_options.clone()).await.unwrap();
     quote.selected_commitments.sort();
+    assert_eq!(quote, expected_quote);
+
+    quote_options.amount = Some(0.0);
+    expected_quote.num_of_inputs = 2;
+    expected_quote.num_of_outputs = 0;
+    expected_quote.selected_commitments = vec![];
+    quote = context.handler.quote(quote_options.clone()).await.unwrap();
     assert_eq!(quote, expected_quote);
 }
 

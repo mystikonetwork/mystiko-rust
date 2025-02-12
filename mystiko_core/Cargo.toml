@@ -61,3 +61,4 @@ mystiko_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-con
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc", features = ["server"] }
 mystiko_storage_sqlite = { version = "0.1.0", path = "../mystiko_storage_sqlite" }
 tokio = { version = "1.27.0", features = ["macros", "rt", "test-util"] }
+rstest = { version = "0.24.0" }
