@@ -36,66 +36,70 @@ where
             return Ok(quote);
         }
         if let Some(amount) = options.amount {
-            let amount = number_to_biguint_decimal(amount, Some(context.contract_config.asset_decimals()))?;
-            let mut valid_amount = false;
-            if let Some(amount_range) = quote.amount_range.as_ref() {
-                if amount.gt(&amount_range.decimal_min_as_biguint()?)
-                    && amount.le(&amount_range.decimal_max_as_biguint()?)
-                {
-                    valid_amount = true;
-                }
-            }
-            if !valid_amount {
-                for fixed_amount in quote.fixed_decimal_amounts_as_biguint()?.iter() {
-                    if amount.eq(fixed_amount) {
+            if amount > 0.0f64 {
+                let amount = number_to_biguint_decimal(amount, Some(context.contract_config.asset_decimals()))?;
+                let mut valid_amount = false;
+                if let Some(amount_range) = quote.amount_range.as_ref() {
+                    if amount.gt(&amount_range.decimal_min_as_biguint()?)
+                        && amount.le(&amount_range.decimal_max_as_biguint()?)
+                    {
                         valid_amount = true;
-                        break;
                     }
                 }
-            }
-            if !valid_amount {
-                quote.valid = false;
-                quote.invalid_code = Some(SpendInvalidCode::InvalidAmount as i32);
-                return Ok(quote);
-            }
-            let selected = select_commitments(&commitments, Some(amount.clone()), MAX_NUM_INPUTS);
-            let selected_sum = selected
-                .iter()
-                .filter_map(|commitment| commitment.data.amount.clone())
-                .sum::<BigUint>();
-            quote.selected_commitments = selected
-                .iter()
-                .map(|commitment| commitment.data.commitment_hash.to_string())
-                .collect::<Vec<_>>();
-            quote.num_of_inputs = selected.len() as u64;
-            if selected_sum.ne(&amount) {
-                quote.num_of_outputs += 1;
-            }
-            if options.use_relayer() {
-                quote.gas_relayer_fee_asset_symbol = Some(quote.asset_symbol.to_string());
-                quote.gas_relayer_fee_asset_decimals = Some(quote.asset_decimals);
-                let gas_relayers = self
-                    .query_gas_relayer(
-                        &context,
-                        quote.num_of_inputs,
-                        quote.num_of_outputs,
-                        options.query_timeout_ms,
-                        None,
-                    )
-                    .await?;
-                quote.gas_relayers = build_gas_relayers(
-                    gas_relayers,
-                    context.contract_config.asset_symbol(),
-                    context.contract_config.asset_decimals(),
-                )?;
-                let total_rollup_fee_amount = quote
-                    .min_rollup_fee_decimal_as_biguint()?
-                    .mul(BigUint::from(quote.num_of_outputs));
-                let max_gas_relayer_fee = amount.sub(&total_rollup_fee_amount);
-                let max_gas_relayer_fee_number =
-                    decimal_to_number::<f64, _>(&max_gas_relayer_fee, Some(context.contract_config.asset_decimals()))?;
-                quote.max_gas_relayer_fee = Some(max_gas_relayer_fee_number);
-                quote.max_gas_relayer_fee_decimal = Some(max_gas_relayer_fee.to_string());
+                if !valid_amount {
+                    for fixed_amount in quote.fixed_decimal_amounts_as_biguint()?.iter() {
+                        if amount.eq(fixed_amount) {
+                            valid_amount = true;
+                            break;
+                        }
+                    }
+                }
+                if !valid_amount {
+                    quote.valid = false;
+                    quote.invalid_code = Some(SpendInvalidCode::InvalidAmount as i32);
+                    return Ok(quote);
+                }
+                let selected = select_commitments(&commitments, Some(amount.clone()), MAX_NUM_INPUTS);
+                let selected_sum = selected
+                    .iter()
+                    .filter_map(|commitment| commitment.data.amount.clone())
+                    .sum::<BigUint>();
+                quote.selected_commitments = selected
+                    .iter()
+                    .map(|commitment| commitment.data.commitment_hash.to_string())
+                    .collect::<Vec<_>>();
+                quote.num_of_inputs = selected.len() as u64;
+                if selected_sum.ne(&amount) {
+                    quote.num_of_outputs += 1;
+                }
+                if options.use_relayer() {
+                    quote.gas_relayer_fee_asset_symbol = Some(quote.asset_symbol.to_string());
+                    quote.gas_relayer_fee_asset_decimals = Some(quote.asset_decimals);
+                    let gas_relayers = self
+                        .query_gas_relayer(
+                            &context,
+                            quote.num_of_inputs,
+                            quote.num_of_outputs,
+                            options.query_timeout_ms,
+                            None,
+                        )
+                        .await?;
+                    quote.gas_relayers = build_gas_relayers(
+                        gas_relayers,
+                        context.contract_config.asset_symbol(),
+                        context.contract_config.asset_decimals(),
+                    )?;
+                    let total_rollup_fee_amount = quote
+                        .min_rollup_fee_decimal_as_biguint()?
+                        .mul(BigUint::from(quote.num_of_outputs));
+                    let max_gas_relayer_fee = amount.sub(&total_rollup_fee_amount);
+                    let max_gas_relayer_fee_number = decimal_to_number::<f64, _>(
+                        &max_gas_relayer_fee,
+                        Some(context.contract_config.asset_decimals()),
+                    )?;
+                    quote.max_gas_relayer_fee = Some(max_gas_relayer_fee_number);
+                    quote.max_gas_relayer_fee_decimal = Some(max_gas_relayer_fee.to_string());
+                }
             }
         }
         if quote.num_of_outputs > 0 && context.contract_config.disabled() {
@@ -193,14 +197,28 @@ where
             .iter()
             .map(|amount| decimal_to_number::<f64, _>(amount, Some(asset_decimals)))
             .collect::<anyhow::Result<Vec<_>>>()?;
-        let amount_range = AmountRange::builder()
-            .min(fixed_amount_threshold_number)
-            .decimal_min(fixed_amount_threshold.to_string())
-            .max(max_amount_number)
-            .decimal_max(max_amount.to_string())
-            .build();
+        let amount_range = if max_amount.gt(&fixed_amount_threshold) {
+            Some(
+                AmountRange::builder()
+                    .min(fixed_amount_threshold_number)
+                    .decimal_min(fixed_amount_threshold.to_string())
+                    .max(max_amount_number)
+                    .decimal_max(max_amount.to_string())
+                    .build(),
+            )
+        } else {
+            None
+        };
+
+        let (valid, invalid_code) = if amount_range.is_none() && fixed_amounts.is_empty() {
+            (false, Some(SpendInvalidCode::InvalidAmount as i32))
+        } else {
+            (true, None)
+        };
+
         Ok(SpendQuote::builder()
-            .valid(true)
+            .valid(valid)
+            .invalid_code(invalid_code)
             .asset_symbol(asset_symbol.to_string())
             .asset_decimals(asset_decimals)
             .current_balance(balance_number)
