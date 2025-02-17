@@ -1262,7 +1262,18 @@ async fn test_loop_deposit_insufficient_main_token() {
             options.chain_id == 97_u64 && options.owner == owner && options.timeout_ms == Some(100_u64)
         })
         .returning(|_| Ok(U256::from_dec_str("100000000000000").unwrap()));
-    let options = MockOptions::builder().assets(assets).build();
+    let mut screening = MockScreeningClient::new();
+    screening
+        .expect_address_screening()
+        .withf(move |options|
+            options.chain_id == 97_u64 &&
+                options.asset== Some("0x0000000000000000000000000000000000000000".to_string()) &&
+                options.account== ethers_address_to_string(&owner))
+        .returning(|_| Ok(ScreeningResponse::builder()
+            .deadline(0_u64)
+            .signature("0x0f95f7effb9f3c8c20a6c78b2278a7ed2cee87ee5cf29031729124711623dd3b14e7e6fb419a61d9c262110c4812d2a37f2c137d2559192eee3f477cc08d92f51c".to_string())
+            .build()));
+    let options = MockOptions::builder().assets(assets).screening(screening).build();
     let (db, handler) = setup(options).await;
     let (_, account) = create_wallet(db).await;
     let quote = mystiko_protos::core::handler::v1::DepositQuote::builder()

@@ -42,10 +42,10 @@ where
     {
         let context = DepositContext::from_deposit(self.config.clone(), &deposit)?;
         self.validate_deposit(&context, &deposit, options).await?;
+        let screening_options = self.address_screening(&context, options, signer.clone(), owner).await?;
         let deposit = self
             .execute_assets_approve(&context, options, deposit, signer.clone(), owner)
             .await?;
-        let screening_options = self.address_screening(&context, options, signer.clone(), owner).await?;
         let deposit = self
             .send_deposit(&context, options, screening_options, deposit, signer.clone())
             .await?;

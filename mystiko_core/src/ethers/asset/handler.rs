@@ -147,7 +147,7 @@ where
             return Err(PublicAssetsError::InsufficientBalanceError(balance, options.amount));
         }
         let allowance = erc20_allowance(&contract, options.owner, options.recipient, options.timeout_ms).await?;
-        if allowance.le(&options.amount) {
+        if allowance.lt(&options.amount) {
             let mut tx = options.tx.into();
             tx.set_to(options.asset_address);
             if let Some(call_data) = contract.approve(options.recipient, options.amount).calldata() {
