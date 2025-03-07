@@ -17,11 +17,11 @@ ethers-core = { version = "2.0.3" }
 futures = { version = "0.3.28" }
 log = { version = "0.4.17" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers" }
-mystiko_relayer_abi = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629" }
-mystiko_relayer_config = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629" }
+mystiko_relayer_abi = { git = "https://github.com/mystikonetwork/mystiko-static-config", rev = "a290629" }
+mystiko_relayer_config = { git = "https://github.com/mystikonetwork/mystiko-static-config", rev = "a290629" }
 mystiko_relayer_types = { version = "0.1.0", path = "../mystiko_relayer_types" }
 mystiko_utils = { version = "0.1.0", path = "../mystiko_utils" }
-mystiko_types = { git = "ssh://git@github.com/mystikonetwork/mystiko-static-config.git", rev = "a290629" }
+mystiko_types = { git = "https://github.com/mystikonetwork/mystiko-static-config", rev = "a290629" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["mystiko-relayer-v1"] }
 reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 rust_decimal = { version = "1.29.0" }
