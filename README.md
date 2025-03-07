@@ -12,4 +12,4 @@ zkSnark compiler and toolchain. Here is the details of the proving schemes we ar
 * **[groth16](https://eprint.iacr.org/2016/260)** - a proving scheme could work with the alt_bn128 curves.
 * **[snarkjs](https://github.com/iden3/snarkjs)** - a zkSnark backend and runtime.
 
-You can visit [Developer Docs](https://developer.mystiko.network/)
+You can visit [Developer Docs](https://developer.mystiko.network/) for more information.
