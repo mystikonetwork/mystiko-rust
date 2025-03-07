@@ -1,4 +1,4 @@
-# Mystiko.Network - The Layer P(rivacy) of Web 3.0
+# Mystiko.Network - The ZK Layer of Web 3.0
 
 [![build status](https://github.com/mystikonetwork/mystiko-core/actions/workflows/build.yml/badge.svg)](https://github.com/mystikonetwork/mystiko-core/actions/workflows/build.yml)
 
@@ -6,7 +6,7 @@
 This repository contains the implementation of Mystiko's core protocol in Rust. Please check our
 [Whitepaper](https://mystiko.network/whitepaper.pdf) for more formal information about the protocol.
 
-Our zero knowledge proof primitives are built based on [Zkorates](https://zokrates.github.io/), which is a popular
+Our zero knowledge proof primitives are built based on [Zokrates](https://zokrates.github.io/), which is a popular
 zkSnark compiler and toolchain. Here is the details of the proving schemes we are using:
 * **alt_bn128** - a pairing-friendly elliptic curve, which is also efficient on EVM.
 * **[groth16](https://eprint.iacr.org/2016/260)** - a proving scheme could work with the alt_bn128 curves.
