@@ -21,14 +21,14 @@ lazy_static = { version = "1.4.0" }
 log = { version = "0.4.17" }
 mystiko_abi = { version = "0.1.0", path = "../mystiko_abi" }
 mystiko_config = { git = "https://github.com/mystikonetwork/mystiko-static-config", rev = "a290629" }
-mystiko_crypto = { git = "https://github.com/mystikonetwork/mystiko-protocol", rev = "1afe17a", features = ["zkp"] }
+mystiko_crypto = { git = "https://github.com/mystikonetwork/mystiko-protocol", rev = "2f9f410", features = ["zkp"] }
 mystiko_dataloader = { version = "0.1.0", path = "../mystiko_dataloader" }
 mystiko_datapacker_client = { version = "0.1.0", path = "../mystiko_datapacker_client" }
 mystiko_datapacker_common = { version = "0.1.0", path = "../mystiko_datapacker_common" }
 mystiko_sequencer_client = { version = "0.1.0", path = "../mystiko_sequencer_client" }
 mystiko_ethers = { version = "0.1.0", path = "../mystiko_ethers", features = ["config"] }
 mystiko_grpc = { version = "0.1.0", path = "../mystiko_grpc" }
-mystiko_protocol = { git = "https://github.com/mystikonetwork/mystiko-protocol", rev = "1afe17a" }
+mystiko_protocol = { git = "https://github.com/mystikonetwork/mystiko-protocol", rev = "2f9f410" }
 mystiko_protos = { version = "0.1.0", path = "../mystiko_protos", default-features = false, features = ["ethers", "grpc-client", "mystiko-core-v1", "mystiko-core-handler-v1", "mystiko-core-document-v1", "mystiko-core-scanner-v1", "mystiko-core-synchronizer-v1", "mystiko-storage-v1", "mystiko-service-v1"] }
 mystiko_relayer_client = { version = "0.1.0", path = "../mystiko_relayer_client" }
 mystiko_screening_client = { version = "0.1.0", path = "../mystiko_screening_client" }
