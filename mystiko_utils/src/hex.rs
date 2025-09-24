@@ -29,7 +29,7 @@ where
         encode_hex(&bytes[0..length])
     } else {
         let mut hex_str = encode_hex(bytes);
-        hex_str.extend(std::iter::repeat('0').take(length - bytes.len()));
+        hex_str.extend(std::iter::repeat_n('0', length - bytes.len()));
         hex_str
     }
 }

@@ -138,7 +138,7 @@ where
         }
 
         let data = self.data.read().await;
-        let min_end_block = data.iter().map(|(_, v)| v.end_block).min();
+        let min_end_block = data.values().map(|v| v.end_block).min();
 
         Ok(min_end_block)
     }

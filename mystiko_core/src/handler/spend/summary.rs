@@ -98,9 +98,11 @@ fn validate_create_options(
         return Err(SpendsError::InvalidPublicAddressError(options.recipient.clone()));
     }
     let amount = number_to_biguint_decimal(options.amount, Some(quote.asset_decimals))?;
-    let min_rollup_fee_amount = (quote.num_of_outputs > 0)
-        .then_some(quote.min_rollup_fee)
-        .unwrap_or_default();
+    let min_rollup_fee_amount = if quote.num_of_outputs > 0 {
+        quote.min_rollup_fee
+    } else {
+        Default::default()
+    };
     let rollup_fee_amount = options.rollup_fee_amount.unwrap_or(min_rollup_fee_amount);
     let rollup_fee_decimal_amount = number_to_biguint_decimal(rollup_fee_amount, Some(quote.asset_decimals))?;
     let gas_relayer_fee = gas_relayer

@@ -22,7 +22,7 @@ impl FieldInfo<'_> {
         field: &syn::Field,
         column_enum_name: syn::Ident,
         column_enum_item_name: syn::Ident,
-    ) -> Result<FieldInfo, syn::parse::Error> {
+    ) -> Result<FieldInfo<'_>, syn::parse::Error> {
         if let Some(ref name) = field.ident {
             let ty = option_inside_type(&field.ty);
             let type_name = type_name(ty)?;

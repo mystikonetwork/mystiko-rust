@@ -411,8 +411,7 @@ impl SqlStatementFormatter {
                 filter.values,
             )),
             SubFilterOperator::In => {
-                let value_marks = std::iter::repeat(self.value_mark())
-                    .take(filter.values.len())
+                let value_marks = std::iter::repeat_n(self.value_mark(), filter.values.len())
                     .collect::<Vec<_>>()
                     .join(", ");
                 Ok(Statement::new(

@@ -378,7 +378,7 @@ fn create_plan(
             let mut i: u64 = 0;
             while i < num_last_granularities {
                 let last_granularity_index = last_granularity_indexes[i as usize];
-                if last_granularity_index % factor == 0 && i + factor <= num_last_granularities {
+                if last_granularity_index.is_multiple_of(factor) && i + factor <= num_last_granularities {
                     granularity_indexes.push(last_granularity_index / factor);
                     i += factor;
                 } else {
