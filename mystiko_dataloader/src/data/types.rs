@@ -38,7 +38,7 @@ pub enum DataRef<'a> {
 
 pub trait LoadedData: Send + Sync {
     fn data_type() -> DataType;
-    fn data_ref(&self) -> DataRef;
+    fn data_ref(&self) -> DataRef<'_>;
     fn from_data(data: Data) -> Self;
     fn into_data(self) -> Data;
 }
@@ -48,7 +48,7 @@ impl LoadedData for FullData {
         DataType::Full
     }
 
-    fn data_ref(&self) -> DataRef {
+    fn data_ref(&self) -> DataRef<'_> {
         DataRef::Full(self)
     }
 
@@ -72,7 +72,7 @@ impl LoadedData for LiteData {
         DataType::Lite
     }
 
-    fn data_ref(&self) -> DataRef {
+    fn data_ref(&self) -> DataRef<'_> {
         DataRef::Lite(self)
     }
 

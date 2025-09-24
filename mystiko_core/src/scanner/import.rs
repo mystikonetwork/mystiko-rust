@@ -260,7 +260,7 @@ where
         let pool_contract = ethers_address_from_string(pool_contract_cfg.address())?;
         let commitments = self
             .sequencer
-            .get_commitments(chain_id, &pool_contract, &[commitment_hash.clone()])
+            .get_commitments(chain_id, &pool_contract, std::slice::from_ref(&commitment_hash))
             .await
             .map_err(|e| anyhow!("sequencer client error: {}", e))?;
         let commitment_data = commitments.first().ok_or(ScannerError::CommitmentEmptyError)?;
