@@ -369,6 +369,12 @@ impl EtherScanClient {
     }
 
     fn format_url(&self, params: &[String]) -> String {
-        format!("{}{}?{}", self.base_url, self.url_prefix, params.join("&"))
+        format!(
+            "{}{}?chainid={}&{}",
+            self.base_url,
+            self.url_prefix,
+            self.chain_id,
+            params.join("&")
+        )
     }
 }
