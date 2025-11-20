@@ -53,13 +53,22 @@ pub enum ProviderFetcherError {
 pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u32 = 5;
 pub const DEFAULT_MAX_RETRY_TIMES: u32 = 20;
 
-#[derive(Debug, Default, TypedBuilder)]
+#[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ProviderRetryConfig {
     #[builder(default = DEFAULT_MAX_REQUESTS_PER_SECOND)]
     max_requests_per_second: u32,
     #[builder(default = DEFAULT_MAX_RETRY_TIMES)]
     max_retry_times: u32,
+}
+
+impl Default for ProviderRetryConfig {
+    fn default() -> Self {
+        Self::builder()
+            .max_requests_per_second(DEFAULT_MAX_REQUESTS_PER_SECOND)
+            .max_retry_times(DEFAULT_MAX_RETRY_TIMES)
+            .build()
+    }
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -185,7 +194,10 @@ where
     P: Providers,
 {
     fn from(providers: Arc<P>) -> Self {
-        Self::builder().providers(providers).build()
+        Self::builder()
+            .providers(providers)
+            .retry_config(ProviderRetryConfig::default())
+            .build()
     }
 }
 
