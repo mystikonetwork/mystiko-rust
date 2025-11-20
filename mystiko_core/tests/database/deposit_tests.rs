@@ -67,7 +67,7 @@ async fn test_deposits_crud() {
     );
     inserted_deposits.extend(
         deposits
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Deposit {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
@@ -208,10 +208,7 @@ async fn test_deposits_crud() {
     // testing delete/delete_batch/delete_by_filter/delete_all
     deposits.delete(&inserted_deposits[0]).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 2);
-    deposits
-        .delete_batch(&vec![inserted_deposits[1].clone()])
-        .await
-        .unwrap();
+    deposits.delete_batch(&[inserted_deposits[1].clone()]).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 1);
     deposits.insert(&inserted_deposits[0].data).await.unwrap();
     assert_eq!(deposits.count_all().await.unwrap(), 2);
