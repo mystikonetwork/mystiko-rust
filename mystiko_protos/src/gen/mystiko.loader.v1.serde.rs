@@ -1010,6 +1010,12 @@ impl serde::Serialize for ProviderFetcherConfig {
         if self.target_block_priority.is_some() {
             len += 1;
         }
+        if self.max_requests_per_second.is_some() {
+            len += 1;
+        }
+        if self.max_retry_times.is_some() {
+            len += 1;
+        }
         let mut struct_ser = serializer.serialize_struct("mystiko.loader.v1.ProviderFetcherConfig", len)?;
         if let Some(v) = self.concurrency.as_ref() {
             struct_ser.serialize_field("concurrency", v)?;
@@ -1025,6 +1031,12 @@ impl serde::Serialize for ProviderFetcherConfig {
         }
         if let Some(v) = self.target_block_priority.as_ref() {
             struct_ser.serialize_field("targetBlockPriority", v)?;
+        }
+        if let Some(v) = self.max_requests_per_second.as_ref() {
+            struct_ser.serialize_field("maxRequestsPerSecond", v)?;
+        }
+        if let Some(v) = self.max_retry_times.as_ref() {
+            struct_ser.serialize_field("maxRetryTimes", v)?;
         }
         struct_ser.end()
     }
@@ -1044,6 +1056,10 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             "skipValidation",
             "target_block_priority",
             "targetBlockPriority",
+            "max_requests_per_second",
+            "maxRequestsPerSecond",
+            "max_retry_times",
+            "maxRetryTimes",
         ];
 
         #[allow(clippy::enum_variant_names)]
@@ -1053,6 +1069,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
             Chains,
             SkipValidation,
             TargetBlockPriority,
+            MaxRequestsPerSecond,
+            MaxRetryTimes,
         }
         impl<'de> serde::Deserialize<'de> for GeneratedField {
             fn deserialize<D>(deserializer: D) -> std::result::Result<GeneratedField, D::Error>
@@ -1079,6 +1097,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                             "chains" => Ok(GeneratedField::Chains),
                             "skipValidation" | "skip_validation" => Ok(GeneratedField::SkipValidation),
                             "targetBlockPriority" | "target_block_priority" => Ok(GeneratedField::TargetBlockPriority),
+                            "maxRequestsPerSecond" | "max_requests_per_second" => Ok(GeneratedField::MaxRequestsPerSecond),
+                            "maxRetryTimes" | "max_retry_times" => Ok(GeneratedField::MaxRetryTimes),
                             _ => Err(serde::de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -1103,6 +1123,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                 let mut chains__ = None;
                 let mut skip_validation__ = None;
                 let mut target_block_priority__ = None;
+                let mut max_requests_per_second__ = None;
+                let mut max_retry_times__ = None;
                 while let Some(k) = map.next_key()? {
                     match k {
                         GeneratedField::Concurrency => {
@@ -1144,6 +1166,22 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                                 map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
                             ;
                         }
+                        GeneratedField::MaxRequestsPerSecond => {
+                            if max_requests_per_second__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxRequestsPerSecond"));
+                            }
+                            max_requests_per_second__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
+                        GeneratedField::MaxRetryTimes => {
+                            if max_retry_times__.is_some() {
+                                return Err(serde::de::Error::duplicate_field("maxRetryTimes"));
+                            }
+                            max_retry_times__ = 
+                                map.next_value::<::std::option::Option<::pbjson::private::NumberDeserialize<_>>>()?.map(|x| x.0)
+                            ;
+                        }
                     }
                 }
                 Ok(ProviderFetcherConfig {
@@ -1152,6 +1190,8 @@ impl<'de> serde::Deserialize<'de> for ProviderFetcherConfig {
                     chains: chains__.unwrap_or_default(),
                     skip_validation: skip_validation__,
                     target_block_priority: target_block_priority__,
+                    max_requests_per_second: max_requests_per_second__,
+                    max_retry_times: max_retry_times__,
                 })
             }
         }

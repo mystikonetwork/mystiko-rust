@@ -94,7 +94,7 @@ fn test_format_insert() {
      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
     assert_eq!(statement2.column_values.len(), 43);
-    let statements = formatter.format_insert_batch(&vec![document1, document2]);
+    let statements = formatter.format_insert_batch(&[document1, document2]);
     assert_eq!(statements, vec![statement1, statement2]);
 }
 
@@ -139,7 +139,7 @@ fn test_format_update() {
         WHERE `id` = ?"
     );
     assert_eq!(statement2.column_values.len(), 42);
-    let statements = formatter.format_update_batch(&vec![document1, document2]);
+    let statements = formatter.format_update_batch(&[document1, document2]);
     assert_eq!(statements, vec![statement1, statement2]);
 }
 
@@ -280,7 +280,7 @@ fn test_format_delete() {
             .value(Value::StringValue("2".to_string()))
             .build()]
     );
-    let statements = formatter.format_delete_batch(&vec![document1, document2]);
+    let statements = formatter.format_delete_batch(&[document1, document2]);
     assert_eq!(statements, vec![statement1, statement2]);
 }
 

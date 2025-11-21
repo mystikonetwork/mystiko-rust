@@ -63,7 +63,7 @@ async fn test_spend_crud() {
     );
     inserted_spends.extend(
         spends
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Spend {
                     chain_id: 2,
                     contract_address: String::from("contract_address 2"),
@@ -199,7 +199,7 @@ async fn test_spend_crud() {
     // testing delete/delete_batch/delete_by_filter/delete_all
     spends.delete(&inserted_spends[0]).await.unwrap();
     assert_eq!(spends.count_all().await.unwrap(), 2);
-    spends.delete_batch(&vec![inserted_spends[1].clone()]).await.unwrap();
+    spends.delete_batch(&[inserted_spends[1].clone()]).await.unwrap();
     assert_eq!(spends.count_all().await.unwrap(), 1);
     spends.insert(&inserted_spends[0].data).await.unwrap();
     assert_eq!(spends.count_all().await.unwrap(), 2);

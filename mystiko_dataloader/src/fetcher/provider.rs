@@ -15,6 +15,7 @@ use ethers_core::types::{BlockNumber, Filter, U64};
 use ethers_providers::Middleware;
 use ethers_providers::ProviderError;
 use ethers_providers::Quorum;
+use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_config::MystikoConfig;
@@ -25,7 +26,6 @@ use mystiko_etherscan_client::{Log, LogMeta};
 use mystiko_protos::common::v1::ProviderType;
 use mystiko_protos::data::v1::{Commitment, CommitmentStatus, Nullifier};
 use mystiko_protos::loader::v1::ProviderFetcherConfig;
-
 use mystiko_types::{BridgeType, ContractType};
 use mystiko_utils::convert::u256_to_bytes;
 use rustc_hex::FromHexError;
@@ -33,6 +33,7 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
 use thiserror::Error;
+use tokio::time::{sleep, Instant};
 use typed_builder::TypedBuilder;
 
 pub const PROVIDER_FETCHER_NAME: &str = "provider";
@@ -49,6 +50,27 @@ pub enum ProviderFetcherError {
     UnsupportedChainError(u64),
 }
 
+pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u32 = 5;
+pub const DEFAULT_MAX_RETRY_TIMES: u32 = 20;
+
+#[derive(Debug, TypedBuilder)]
+#[builder(field_defaults(setter(into)))]
+pub struct ProviderRetryConfig {
+    #[builder(default = DEFAULT_MAX_REQUESTS_PER_SECOND)]
+    max_requests_per_second: u32,
+    #[builder(default = DEFAULT_MAX_RETRY_TIMES)]
+    max_retry_times: u32,
+}
+
+impl Default for ProviderRetryConfig {
+    fn default() -> Self {
+        Self::builder()
+            .max_requests_per_second(DEFAULT_MAX_REQUESTS_PER_SECOND)
+            .max_retry_times(DEFAULT_MAX_RETRY_TIMES)
+            .build()
+    }
+}
+
 #[derive(Debug, TypedBuilder)]
 #[builder(field_defaults(setter(into)))]
 pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
@@ -57,6 +79,8 @@ pub struct ProviderFetcher<R: LoadedData, P = Box<dyn Providers>> {
     concurrency: Option<u32>,
     #[builder(default)]
     chain_delay_num_blocks: HashMap<u64, u64>,
+    #[builder(default)]
+    retry_config: ProviderRetryConfig,
     #[builder(default, setter(skip))]
     _phantom: std::marker::PhantomData<R>,
 }
@@ -113,9 +137,13 @@ where
         Ok(ChainResult::builder()
             .chain_id(option.chain_id)
             .contract_results(
-                fetch_contracts::<R>(fetch_options, self.concurrency.unwrap_or(1) as usize)
-                    .await
-                    .map_err(FetcherError::AnyhowError)?,
+                fetch_contracts::<R>(
+                    fetch_options,
+                    &self.retry_config,
+                    self.concurrency.unwrap_or(1) as usize,
+                )
+                .await
+                .map_err(FetcherError::AnyhowError)?,
             )
             .build())
     }
@@ -166,7 +194,10 @@ where
     P: Providers,
 {
     fn from(providers: Arc<P>) -> Self {
-        Self::builder().providers(providers).build()
+        Self::builder()
+            .providers(providers)
+            .retry_config(ProviderRetryConfig::default())
+            .build()
     }
 }
 
@@ -187,6 +218,16 @@ where
             .providers(providers)
             .chain_delay_num_blocks(delay_blocks)
             .concurrency(config.concurrency)
+            .retry_config(
+                ProviderRetryConfig::builder()
+                    .max_requests_per_second(
+                        config
+                            .max_requests_per_second
+                            .unwrap_or(DEFAULT_MAX_REQUESTS_PER_SECOND),
+                    )
+                    .max_retry_times(config.max_retry_times.unwrap_or(DEFAULT_MAX_RETRY_TIMES))
+                    .build(),
+            )
             .build()
     }
 }
@@ -328,6 +369,7 @@ fn to_options(
 
 async fn fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
+    retry_config: &ProviderRetryConfig,
     concurrency: usize,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let concurrency = if concurrency == 0 { 1 } else { concurrency };
@@ -335,7 +377,7 @@ async fn fetch_contracts<R: LoadedData>(
     let chunks = options.chunks(chunk_nums);
     let mut group_tasks = Vec::with_capacity(chunks.len());
     for chunk in chunks {
-        group_tasks.push(group_fetch_contracts::<R>(chunk.to_vec()))
+        group_tasks.push(group_fetch_contracts::<R>(chunk.to_vec(), retry_config))
     }
     let group_results = futures::future::try_join_all(group_tasks).await?;
     Ok(group_results
@@ -346,10 +388,11 @@ async fn fetch_contracts<R: LoadedData>(
 
 async fn group_fetch_contracts<R: LoadedData>(
     options: Vec<ProviderContractFetchOptions>,
+    retry_config: &ProviderRetryConfig,
 ) -> Result<Vec<ContractResult<ContractData<R>>>> {
     let mut group_result = Vec::with_capacity(options.len());
     for option in options {
-        let contract_result = fetch_contract(option).await?;
+        let contract_result = fetch_contract(option, retry_config).await?;
         group_result.push(contract_result);
     }
     Ok(group_result)
@@ -357,25 +400,29 @@ async fn group_fetch_contracts<R: LoadedData>(
 
 async fn fetch_contract<R: LoadedData>(
     option: ProviderContractFetchOptions,
+    retry_config: &ProviderRetryConfig,
 ) -> Result<ContractResult<ContractData<R>>> {
     Ok(ContractResult::builder()
         .address(option.contract_address.to_string())
-        .result(fetch_contract_result(&option).await)
+        .result(fetch_contract_result(&option, retry_config).await)
         .build())
 }
 
-async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOptions) -> Result<ContractData<R>> {
+async fn fetch_contract_result<R: LoadedData>(
+    option: &ProviderContractFetchOptions,
+    retry_config: &ProviderRetryConfig,
+) -> Result<ContractData<R>> {
     let commitments = if option.disabled_at {
         Vec::new()
     } else {
-        fetch_commitments(option).await?
+        fetch_commitments(option, retry_config).await?
     };
 
     let data = match R::data_type() {
         DataType::Full => {
             let fulldata = FullData::builder()
                 .commitments(commitments)
-                .nullifiers(fetch_nullifiers(option).await?)
+                .nullifiers(fetch_nullifiers(option, retry_config).await?)
                 .build();
             log::info!(
                 "{} fetch {} commitments and {} nullifiers",
@@ -417,30 +464,39 @@ async fn fetch_contract_result<R: LoadedData>(option: &ProviderContractFetchOpti
         .build())
 }
 
-async fn fetch_commitments(option: &ProviderContractFetchOptions) -> Result<Vec<Commitment>> {
+async fn fetch_commitments(
+    option: &ProviderContractFetchOptions,
+    retry_config: &ProviderRetryConfig,
+) -> Result<Vec<Commitment>> {
     match (&option.contract_type, &option.bridge_type) {
         (ContractType::Pool, _) => build_commitments(CommitmentDataEvent {
             crosschain_events: vec![],
-            queued_events: fetch_logs::<CommitmentQueuedFilter>(option).await?,
-            included_events: fetch_logs::<CommitmentIncludedFilter>(option).await?,
+            queued_events: fetch_logs::<CommitmentQueuedFilter>(option, retry_config).await?,
+            included_events: fetch_logs::<CommitmentIncludedFilter>(option, retry_config).await?,
         }),
         (ContractType::Deposit, BridgeType::Loop) => Ok(vec![]),
         (ContractType::Deposit, _) => build_commitments(CommitmentDataEvent {
-            crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option).await?,
+            crosschain_events: fetch_logs::<CommitmentCrossChainFilter>(option, retry_config).await?,
             queued_events: vec![],
             included_events: vec![],
         }),
     }
 }
 
-async fn fetch_nullifiers(option: &ProviderContractFetchOptions) -> Result<Vec<Nullifier>> {
+async fn fetch_nullifiers(
+    option: &ProviderContractFetchOptions,
+    retry_config: &ProviderRetryConfig,
+) -> Result<Vec<Nullifier>> {
     if option.contract_type == ContractType::Deposit {
         return Ok(vec![]);
     }
-    build_nullifiers(fetch_logs::<CommitmentSpentFilter>(option).await?)
+    build_nullifiers(fetch_logs::<CommitmentSpentFilter>(option, retry_config).await?)
 }
 
-async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Result<Vec<Event<E>>> {
+async fn fetch_logs<E: EthEvent>(
+    option: &ProviderContractFetchOptions,
+    retry_config: &ProviderRetryConfig,
+) -> Result<Vec<Event<E>>> {
     let mut events: Vec<Event<E>> = vec![];
     if option.start_block > option.actual_target_block {
         return Ok(events);
@@ -452,20 +508,19 @@ async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Resul
 
     let mut start_block = option.start_block;
     let mut to_block;
+    let mut last_request_time = None;
     loop {
         to_block = option
             .actual_target_block
             .min(start_block + option.event_filter_size - 1);
+        info!("start_block: {}, to_block: {}", start_block, to_block);
         let filter = Filter::new()
             .topic0(E::signature())
             .address(address)
             .from_block(BlockNumber::Number(U64::from(start_block)))
             .to_block(BlockNumber::Number(U64::from(to_block)));
-        let logs = option
-            .provider
-            .get_logs(&filter)
-            .await
-            .map_err(ProviderFetcherError::ProviderError)?;
+        let (logs, request_result) = fetch_logs_with_retry(option, retry_config, filter, last_request_time).await?;
+        last_request_time = request_result;
         for log in logs {
             let my_log = Log {
                 address: log.address,
@@ -485,6 +540,47 @@ async fn fetch_logs<E: EthEvent>(option: &ProviderContractFetchOptions) -> Resul
         start_block = to_block + 1;
     }
     Ok(events)
+}
+
+async fn fetch_logs_with_retry(
+    option: &ProviderContractFetchOptions,
+    config: &ProviderRetryConfig,
+    filter: Filter,
+    last_request_time: Option<Instant>,
+) -> Result<(Vec<ethers_core::types::Log>, Option<Instant>)> {
+    let mut current_retry_time = 1;
+    let mut request_time = last_request_time;
+    loop {
+        request_time = throttle(request_time, config.max_requests_per_second).await;
+        match option
+            .provider
+            .get_logs(&filter)
+            .await
+            .map_err(ProviderFetcherError::ProviderError)
+        {
+            Ok(logs) => return Ok((logs, request_time)),
+            Err(err) => {
+                if current_retry_time > config.max_retry_times {
+                    return Err(err.into());
+                }
+                current_retry_time += 1;
+                info!("error: {:?} retry fetch logs: {}", err, current_retry_time);
+            }
+        };
+    }
+}
+
+async fn throttle(last_request_time: Option<Instant>, max_requests_per_second: u32) -> Option<Instant> {
+    let now: Instant = Instant::now();
+    if let Some(last_instant) = last_request_time.as_ref() {
+        let elapsed = now.duration_since(*last_instant).as_millis();
+        let wait_ms = 1000 / max_requests_per_second;
+        if elapsed < wait_ms as u128 {
+            info!("wait for: {}", wait_ms as u128 - elapsed);
+            sleep(Duration::from_millis((wait_ms as u128 - elapsed) as u64)).await;
+        }
+    }
+    Some(now)
 }
 
 fn build_commitments(events: CommitmentDataEvent) -> Result<Vec<Commitment>> {

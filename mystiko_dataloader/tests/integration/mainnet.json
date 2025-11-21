@@ -1,0 +1,1684 @@
+{
+  "version": "0.2.0",
+  "chains": [
+    {
+      "chainId": 1,
+      "name": "Ethereum",
+      "assetSymbol": "ETH",
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "100000000000000000",
+        "1000000000000000000",
+        "10000000000000000000",
+        "100000000000000000000"
+      ],
+      "eventDelayBlocks": 20,
+      "explorerUrl": "https://etherscan.io",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventFilterSize": 50000,
+      "indexerFilterSize": 500000,
+      "safeConfirmations": 5,
+      "providers": [
+        {
+          "url": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161"
+        },
+        {
+          "url": "https://rpc.mevblocker.io"
+        },
+        {
+          "url": "https://rpc.flashbots.net"
+        },
+        {
+          "url": "https://eth.drpc.org"
+        },
+        {
+          "url": "https://eth-mainnet.nodereal.io/v1/1659dfb40aa24bbb8153a677b98064d7"
+        }
+      ],
+      "signerEndpoint": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+      "transactionType": "eip1559",
+      "depositContracts": [
+        {
+          "version": 6,
+          "name": "MystikoV2LoopMain",
+          "address": "0x7F88F2A3Cf18E96844E14CaE59EC97B908734C01",
+          "startBlock": 16690440,
+          "bridgeType": "loop",
+          "poolAddress": "0xA9d3173fa17D14FC147c993667A97C6889f5D486",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000",
+          "disabledAt": 20108891
+        },
+        {
+          "version": 6,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x01BC19b166986431F3f2A348497C4634defb4C29",
+          "startBlock": 16690443,
+          "bridgeType": "loop",
+          "poolAddress": "0xA288b938FE6d6bC70aDb5C545A99985993e398F5",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000",
+          "disabledAt": 20108887
+        },
+        {
+          "version": 6,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x53DFAB04453EF45bc637c2687020990c7C8C16bc",
+          "startBlock": 16690446,
+          "bridgeType": "loop",
+          "poolAddress": "0x58b92DB0b3A7924a383062FD441a7c7218aD1703",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000",
+          "disabledAt": 20108886
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "startBlock": 20087636,
+          "bridgeType": "loop",
+          "poolAddress": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x421F845e7d46eA2238d19d40CeB65385DC73F9d1",
+          "startBlock": 20087639,
+          "bridgeType": "loop",
+          "poolAddress": "0x3F0D5259F101cfef825EC3186Ea32abd22Bc235d",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x133326B296a24f45B295BA904A23E2dE4b3423df",
+          "startBlock": 20087642,
+          "bridgeType": "loop",
+          "poolAddress": "0x4AE06d975d3900173CF616e7C4bA8A2340585cE3",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        },
+        {
+          "version": 8,
+          "name": "MystikoV2WormholeERC20",
+          "address": "0xe314C1bF3C00c58815CD69dc109b7D3CB192e30e",
+          "startBlock": 21469658,
+          "bridgeType": "wormhole",
+          "poolAddress": "0x3f60d67412A4eDD7b6995EE983e44FaAb323cE27",
+          "peerChainId": 137,
+          "peerContractAddress": "0xdc2e1fc2e3aF24C325d0c29e8E8421669501AaD8",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000",
+          "minBridgeFee": "0"
+        },
+        {
+          "version": 8,
+          "name": "MystikoV2WormholeMain",
+          "address": "0xEF91A352Ec60fa43B5dAa30990A4c170085A947e",
+          "startBlock": 21469658,
+          "bridgeType": "wormhole",
+          "poolAddress": "0x91479C4C5785285f5E92eBd02A4bA2E247cBA84a",
+          "peerChainId": 137,
+          "peerContractAddress": "0x4FA03c412d5c4eB237EC107Ce4e0CbAC912E7c14",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000",
+          "minBridgeFee": "0"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+          "startBlock": 16690439,
+          "minRollupFee": "10000000000000000",
+          "disabledAt": 18313636
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x62121886c954d7e23077f52217b51c26ad26bE9e",
+          "startBlock": 16690442,
+          "assetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "minRollupFee": "15000000",
+          "disabledAt": 18313641
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D",
+          "startBlock": 16690445,
+          "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "minRollupFee": "15000000",
+          "disabledAt": 18313646
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA9d3173fa17D14FC147c993667A97C6889f5D486",
+          "startBlock": 18312990,
+          "minRollupFee": "3000000000000000",
+          "disabledAt": 20108865
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA288b938FE6d6bC70aDb5C545A99985993e398F5",
+          "startBlock": 18312992,
+          "assetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "minRollupFee": "10000000",
+          "disabledAt": 20108883
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x58b92DB0b3A7924a383062FD441a7c7218aD1703",
+          "startBlock": 18312994,
+          "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "minRollupFee": "10000000",
+          "disabledAt": 20108878
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 20087632,
+          "minRollupFee": "3000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x3F0D5259F101cfef825EC3186Ea32abd22Bc235d",
+          "startBlock": 20087638,
+          "assetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+          "minRollupFee": "10000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x4AE06d975d3900173CF616e7C4bA8A2340585cE3",
+          "startBlock": 20087641,
+          "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "minRollupFee": "10000000"
+        },
+        {
+          "version": 8,
+          "name": "CommitmentPool",
+          "poolName": "delta-20241224",
+          "bridgeType": "wormhole",
+          "address": "0x3f60d67412A4eDD7b6995EE983e44FaAb323cE27",
+          "startBlock": 21469657,
+          "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+          "minRollupFee": "10000000"
+        },
+        {
+          "version": 8,
+          "name": "CommitmentPool",
+          "poolName": "delta-20241224",
+          "bridgeType": "wormhole",
+          "address": "0x91479C4C5785285f5E92eBd02A4bA2E247cBA84a",
+          "startBlock": 21469657,
+          "minRollupFee": "3000000000000000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDT",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+        }
+      ],
+      "packerGranularities": [
+        2000,
+        4000,
+        8000,
+        16000,
+        32000,
+        64000,
+        128000,
+        256000,
+        512000,
+        1024000,
+        2048000,
+        4096000
+      ]
+    },
+    {
+      "chainId": 56,
+      "name": "BNB Chain",
+      "assetSymbol": "BNB",
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "1000000000000000000",
+        "10000000000000000000",
+        "100000000000000000000",
+        "1000000000000000000000"
+      ],
+      "explorerUrl": "https://bscscan.com",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventDelayBlocks": 160,
+      "eventFilterSize": 1000,
+      "indexerFilterSize": 50000,
+      "safeConfirmations": 15,
+      "providers": [
+        {
+          "url": "https://1rpc.io/bnb"
+        }
+      ],
+      "signerEndpoint": "https://bsc-dataseed1.binance.org",
+      "transactionType": "legacy",
+      "depositContracts": [
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0xEF94b1Ad81E7f4b19882829313D84E05A8965b25",
+          "startBlock": 42182575,
+          "bridgeType": "loop",
+          "poolAddress": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "minAmount": "1000000000000000000",
+          "maxAmount": "10000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 42182575,
+          "bridgeType": "loop",
+          "poolAddress": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "minAmount": "100000000000000000000",
+          "maxAmount": "1000000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x3F0D5259F101cfef825EC3186Ea32abd22Bc235d",
+          "startBlock": 42182575,
+          "bridgeType": "loop",
+          "poolAddress": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "minAmount": "100000000000000000000",
+          "maxAmount": "1000000000000000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x932f3DD5b6C0F5fe1aEc31Cb38B7a57d01496411",
+          "startBlock": 26910630,
+          "minRollupFee": "4000000000000000",
+          "disabledAt": 32455593
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x62121886c954d7e23077f52217b51c26ad26bE9e",
+          "startBlock": 26910636,
+          "assetAddress": "0x55d398326f99059ff775485246999027b3197955",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 32455606
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x4333Ab5682Cd4589330BD9CFcedd5E054A0e9d8D",
+          "startBlock": 26910643,
+          "assetAddress": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 32455625
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0xCaD4cbfBe2cC6B85753Fb4b3614E88EA749dBb61",
+          "startBlock": 26910651,
+          "assetAddress": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 32455639
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA9d3173fa17D14FC147c993667A97C6889f5D486",
+          "startBlock": 32452894,
+          "minRollupFee": "4000000000000000",
+          "disabledAt": 42211995
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA288b938FE6d6bC70aDb5C545A99985993e398F5",
+          "startBlock": 32452899,
+          "assetAddress": "0x55d398326f99059ff775485246999027b3197955",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 42212005
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x58b92DB0b3A7924a383062FD441a7c7218aD1703",
+          "startBlock": 32452906,
+          "assetAddress": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 42212015
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xcfc951490b111267260e58d0515e1dAB71Dde2ff",
+          "startBlock": 32452913,
+          "assetAddress": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56",
+          "minRollupFee": "1000000000000000000",
+          "disabledAt": 38589041
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "startBlock": 42182575,
+          "minRollupFee": "4000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "startBlock": 42182575,
+          "assetAddress": "0x55d398326f99059ff775485246999027b3197955",
+          "minRollupFee": "1000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "startBlock": 42182575,
+          "assetAddress": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+          "minRollupFee": "1000000000000000000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDT",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000000",
+            "1000000000000000000000",
+            "10000000000000000000000",
+            "100000000000000000000000"
+          ],
+          "assetAddress": "0x55d398326f99059ff775485246999027b3197955"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000000",
+            "1000000000000000000000",
+            "10000000000000000000000",
+            "100000000000000000000000"
+          ],
+          "assetAddress": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "BUSD",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000000",
+            "1000000000000000000000",
+            "10000000000000000000000",
+            "100000000000000000000000"
+          ],
+          "assetAddress": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
+        }
+      ],
+      "packerGranularities": [
+        7500,
+        15000,
+        30000,
+        60000,
+        120000,
+        240000,
+        480000,
+        960000,
+        1920000,
+        3840000,
+        7680000,
+        15360000
+      ]
+    },
+    {
+      "chainId": 137,
+      "name": "Polygon",
+      "assetSymbol": "POL",
+      "assetSymbolAlias": [
+        "MATIC"
+      ],
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "100000000000000000000",
+        "1000000000000000000000",
+        "10000000000000000000000",
+        "100000000000000000000000"
+      ],
+      "explorerUrl": "https://polygonscan.com",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventDelayBlocks": 100,
+      "eventFilterSize": 1024,
+      "indexerFilterSize": 50000,
+      "safeConfirmations": 15,
+      "providers": [
+        {
+          "url": "https://polygon.drpc.org"
+        },
+        {
+          "url": "https://polygon.gateway.tenderly.co"
+        },
+        {
+          "url": "https://rpc-mainnet.matic.quiknode.pro"
+        }
+      ],
+      "signerEndpoint": "https://polygon.drpc.org",
+      "transactionType": "eip1559",
+      "depositContracts": [
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0xEF94b1Ad81E7f4b19882829313D84E05A8965b25",
+          "startBlock": 61719825,
+          "bridgeType": "loop",
+          "poolAddress": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "minAmount": "100000000000000000000",
+          "maxAmount": "1000000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 61720031,
+          "bridgeType": "loop",
+          "poolAddress": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x3F0D5259F101cfef825EC3186Ea32abd22Bc235d",
+          "startBlock": 61720041,
+          "bridgeType": "loop",
+          "poolAddress": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x4AE06d975d3900173CF616e7C4bA8A2340585cE3",
+          "startBlock": 61720054,
+          "bridgeType": "loop",
+          "poolAddress": "0x421F845e7d46eA2238d19d40CeB65385DC73F9d1",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000"
+        },
+        {
+          "version": 8,
+          "name": "MystikoV2WormholeERC20",
+          "address": "0xdc2e1fc2e3aF24C325d0c29e8E8421669501AaD8",
+          "startBlock": 65855780,
+          "bridgeType": "wormhole",
+          "poolAddress": "0xB96d25C8cB04BE7a5e3CaFAe2dbde76CF18FBAA9",
+          "peerChainId": 1,
+          "peerContractAddress": "0xe314C1bF3C00c58815CD69dc109b7D3CB192e30e",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000",
+          "minBridgeFee": "0"
+        },
+        {
+          "version": 8,
+          "name": "MystikoV2WormholeERC20",
+          "address": "0x4FA03c412d5c4eB237EC107Ce4e0CbAC912E7c14",
+          "startBlock": 65855780,
+          "bridgeType": "wormhole",
+          "poolAddress": "0xeAF142294522D4C55D1F82f83B94Ee25333B42Ed",
+          "peerChainId": 1,
+          "peerContractAddress": "0xEF91A352Ec60fa43B5dAa30990A4c170085A947e",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000",
+          "minBridgeFee": "0"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x95Dfa68De44eCe33F64C4Ac8e5D569B2C5e90A51",
+          "startBlock": 43129119,
+          "minRollupFee": "100000000000000000",
+          "disabledAt": 48516137
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0xe5B34C578E9953411f54C32cfE324598653358f1",
+          "startBlock": 43129131,
+          "assetAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+          "minRollupFee": "100000",
+          "disabledAt": 48516222
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0xCB255075f38C75EAf2DE8A72897649dba9B90299",
+          "startBlock": 43129143,
+          "assetAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+          "minRollupFee": "100000",
+          "disabledAt": 48516245
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x433dD8dBb9e631fbA277c91D09133Ae2616833Fa",
+          "startBlock": 43129157,
+          "assetAddress": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+          "minRollupFee": "100000000000000000",
+          "disabledAt": 48516372
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0xD711e4Fed2451f58f1B814C5F049B137AA0728a2",
+          "startBlock": 43129171,
+          "assetAddress": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+          "minRollupFee": "50000000000000",
+          "disabledAt": 48516418
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA9d3173fa17D14FC147c993667A97C6889f5D486",
+          "startBlock": 48512366,
+          "minRollupFee": "100000000000000000",
+          "disabledAt": 61766367
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA288b938FE6d6bC70aDb5C545A99985993e398F5",
+          "startBlock": 48512373,
+          "assetAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+          "minRollupFee": "100000",
+          "disabledAt": 61766136
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x58b92DB0b3A7924a383062FD441a7c7218aD1703",
+          "startBlock": 48512383,
+          "assetAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+          "minRollupFee": "100000",
+          "disabledAt": 61766153
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xcfc951490b111267260e58d0515e1dAB71Dde2ff",
+          "startBlock": 48512390,
+          "assetAddress": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39",
+          "minRollupFee": "100000000000000000",
+          "disabledAt": 56789472
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x6eCeFEB74c4891c02F533c934E9D139779b55357",
+          "startBlock": 48512397,
+          "assetAddress": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+          "minRollupFee": "50000000000000",
+          "disabledAt": 61766191
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "startBlock": 61719822,
+          "minRollupFee": "100000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "startBlock": 61720027,
+          "assetAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F",
+          "minRollupFee": "100000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "startBlock": 61720036,
+          "assetAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "minRollupFee": "100000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x421F845e7d46eA2238d19d40CeB65385DC73F9d1",
+          "startBlock": 61720050,
+          "assetAddress": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619",
+          "minRollupFee": "50000000000000"
+        },
+        {
+          "version": 8,
+          "name": "CommitmentPool",
+          "poolName": "delta-20241224",
+          "bridgeType": "wormhole",
+          "address": "0xB96d25C8cB04BE7a5e3CaFAe2dbde76CF18FBAA9",
+          "startBlock": 65855773,
+          "assetAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
+          "minRollupFee": "100000"
+        },
+        {
+          "version": 8,
+          "name": "CommitmentPool",
+          "poolName": "delta-20241224",
+          "bridgeType": "wormhole",
+          "address": "0xeAF142294522D4C55D1F82f83B94Ee25333B42Ed",
+          "startBlock": 65855773,
+          "assetAddress": "0x11CD37bb86F65419713f30673A480EA33c826872",
+          "minRollupFee": "1000000000000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDT",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0xc2132D05D31c914a87C6611C10748AEb04B58e8F"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC.e",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "BUSD",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000000",
+            "1000000000000000000000",
+            "10000000000000000000000",
+            "100000000000000000000000"
+          ],
+          "assetAddress": "0x9C9e5fD8bbc25984B178FdCE6117Defa39d2db39"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "WETH",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000",
+            "1000000000000000000",
+            "10000000000000000000",
+            "100000000000000000000"
+          ],
+          "assetAddress": "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "WETHWormhole",
+          "assetDecimals": 18,
+          "recommendedAmounts": [
+            "100000000000000000",
+            "1000000000000000000",
+            "10000000000000000000",
+            "100000000000000000000"
+          ],
+          "assetAddress": "0x11CD37bb86F65419713f30673A480EA33c826872"
+        }
+      ],
+      "packerGranularities": [
+        10000,
+        20000,
+        40000,
+        80000,
+        160000,
+        320000,
+        640000,
+        1280000,
+        2560000,
+        5120000,
+        10240000,
+        20480000
+      ]
+    },
+    {
+      "chainId": 8453,
+      "name": "Base",
+      "assetSymbol": "ETH",
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "100000000000000000",
+        "1000000000000000000",
+        "10000000000000000000",
+        "100000000000000000000"
+      ],
+      "explorerUrl": "https://basescan.org",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventDelayBlocks": 120,
+      "eventFilterSize": 1024,
+      "indexerFilterSize": 500000,
+      "safeConfirmations": 15,
+      "providerQuorumPercentage": 50,
+      "providers": [
+        {
+          "url": "https://mainnet.base.org"
+        },
+        {
+          "url": "https://base.gateway.tenderly.co"
+        },
+        {
+          "url": "https://base.drpc.org"
+        }
+      ],
+      "signerEndpoint": "https://mainnet.base.org",
+      "transactionType": "legacy",
+      "depositContracts": [
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0xd63B923A26821B108D9838f5Fbc3a1784A79e03F",
+          "startBlock": 19280277,
+          "bridgeType": "loop",
+          "poolAddress": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0xD9e0C941dfdf7eB268531b9770A728F33Cb4939a",
+          "startBlock": 19280284,
+          "bridgeType": "loop",
+          "poolAddress": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x7F88F2A3Cf18E96844E14CaE59EC97B908734C01",
+          "startBlock": 3336563,
+          "minRollupFee": "200000000000000",
+          "disabledAt": 5037436
+        },
+        {
+          "version": 5,
+          "name": "CommitmentPool",
+          "poolName": "alpha-20230223",
+          "bridgeType": "loop",
+          "address": "0x01BC19b166986431F3f2A348497C4634defb4C29",
+          "startBlock": 3336590,
+          "assetAddress": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+          "minRollupFee": "300000",
+          "disabledAt": 5037459
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA9d3173fa17D14FC147c993667A97C6889f5D486",
+          "startBlock": 5032931,
+          "minRollupFee": "10000000000000",
+          "disabledAt": 19574838
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xA288b938FE6d6bC70aDb5C545A99985993e398F5",
+          "startBlock": 5032941,
+          "assetAddress": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+          "minRollupFee": "20000",
+          "disabledAt": 19574873
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 19279684,
+          "minRollupFee": "10000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "startBlock": 19279691,
+          "assetAddress": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
+          "minRollupFee": "20000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDbC",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA"
+        }
+      ],
+      "packerGranularities": [
+        10000,
+        20000,
+        40000,
+        80000,
+        160000,
+        320000,
+        640000,
+        1280000,
+        2560000,
+        5120000,
+        10240000
+      ]
+    },
+    {
+      "chainId": 43114,
+      "name": "Avalanche",
+      "assetSymbol": "AVAX",
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "10000000000000000000",
+        "100000000000000000000",
+        "1000000000000000000000",
+        "10000000000000000000000"
+      ],
+      "explorerUrl": "https://snowtrace.io",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventDelayBlocks": 100,
+      "eventFilterSize": 1024,
+      "indexerFilterSize": 50000,
+      "safeConfirmations": 15,
+      "providers": [
+        {
+          "url": "https://api.avax.network/ext/bc/C/rpc"
+        },
+        {
+          "url": "https://avax.meowrpc.com"
+        }
+      ],
+      "signerEndpoint": "https://api.avax.network/ext/bc/C/rpc",
+      "transactionType": "eip1559",
+      "depositContracts": [
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0xEF94b1Ad81E7f4b19882829313D84E05A8965b25",
+          "startBlock": 50425444,
+          "bridgeType": "loop",
+          "poolAddress": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "minAmount": "10000000000000000000",
+          "maxAmount": "100000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 50425456,
+          "bridgeType": "loop",
+          "poolAddress": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0x3F0D5259F101cfef825EC3186Ea32abd22Bc235d",
+          "startBlock": 50425464,
+          "bridgeType": "loop",
+          "poolAddress": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xf5fc0Bd6bBe24a0ff945A8F58aEc2f6EC48EC964",
+          "startBlock": 40514111,
+          "minRollupFee": "20000000000000000",
+          "disabledAt": 50473209
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x373DBe18EEf567D5Dd2a393B8c11e90B1A30d967",
+          "startBlock": 40514123,
+          "assetAddress": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+          "minRollupFee": "500000",
+          "disabledAt": 50473225
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xaEa40007De57E3C13acAFbb7EE0EE5725f3F67fE",
+          "startBlock": 40514135,
+          "assetAddress": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+          "minRollupFee": "500000",
+          "disabledAt": 50473241
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "startBlock": 50425440,
+          "minRollupFee": "20000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "startBlock": 50425452,
+          "assetAddress": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
+          "minRollupFee": "500000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x16C1Cb42D59A4fe1facbe6F0F42956Db103bb6A9",
+          "startBlock": 50425460,
+          "assetAddress": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+          "minRollupFee": "500000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDT",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7"
+        },
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E"
+        }
+      ],
+      "packerGranularities": [
+        10000,
+        20000,
+        40000,
+        80000,
+        160000,
+        320000,
+        640000,
+        1280000,
+        2560000,
+        5120000,
+        10240000
+      ]
+    },
+    {
+      "chainId": 59144,
+      "name": "Linea",
+      "assetSymbol": "ETH",
+      "assetDecimals": 18,
+      "recommendedAmounts": [
+        "100000000000000000",
+        "1000000000000000000",
+        "10000000000000000000",
+        "100000000000000000000"
+      ],
+      "explorerUrl": "https://lineascan.build",
+      "explorerApiUrl": "https://api.etherscan.io/v2",
+      "eventDelayBlocks": 120,
+      "eventFilterSize": 1000,
+      "indexerFilterSize": 500000,
+      "safeConfirmations": 15,
+      "providers": [
+        {
+          "url": "https://rpc.linea.build"
+        },
+        {
+          "url": "https://linea.rpc.thirdweb.com"
+        },
+        {
+          "url": "https://1rpc.io/linea"
+        }
+      ],
+      "signerEndpoint": "https://linea.drpc.org",
+      "transactionType": "legacy",
+      "depositContracts": [
+        {
+          "version": 7,
+          "name": "MystikoV2LoopMain",
+          "address": "0xEF94b1Ad81E7f4b19882829313D84E05A8965b25",
+          "startBlock": 9349146,
+          "bridgeType": "loop",
+          "poolAddress": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "minAmount": "100000000000000000",
+          "maxAmount": "1000000000000000000000"
+        },
+        {
+          "version": 7,
+          "name": "MystikoV2LoopERC20",
+          "address": "0xa51EE11d40c39A67a0343Ac8706dd271829eA40F",
+          "startBlock": 9349153,
+          "bridgeType": "loop",
+          "poolAddress": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "minAmount": "100000000",
+          "maxAmount": "1000000000000"
+        }
+      ],
+      "poolContracts": [
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0x8FfA92155bd9cc60198FBE6E1e6fd32A4A82dEA2",
+          "startBlock": 3707166,
+          "minRollupFee": "40000000000000",
+          "disabledAt": 9399186
+        },
+        {
+          "version": 6,
+          "name": "CommitmentPool",
+          "poolName": "beta-20231009",
+          "bridgeType": "loop",
+          "address": "0xf5fc0Bd6bBe24a0ff945A8F58aEc2f6EC48EC964",
+          "startBlock": 3707166,
+          "assetAddress": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff",
+          "minRollupFee": "100000",
+          "disabledAt": 9399204
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x29ED7DE21ccc80dc5921A8d9d8650247653C1188",
+          "startBlock": 9349143,
+          "minRollupFee": "40000000000000"
+        },
+        {
+          "version": 7,
+          "name": "CommitmentPool",
+          "poolName": "gamma-20240613",
+          "bridgeType": "loop",
+          "address": "0x0d75ec7Dc77bd0f74A8a7642327f6249353A0748",
+          "startBlock": 9349151,
+          "assetAddress": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff",
+          "minRollupFee": "100000"
+        }
+      ],
+      "assets": [
+        {
+          "assetType": "erc20",
+          "assetSymbol": "USDC",
+          "assetDecimals": 6,
+          "recommendedAmounts": [
+            "100000000",
+            "1000000000",
+            "10000000000",
+            "100000000000"
+          ],
+          "assetAddress": "0x176211869cA2b568f2A7D4EE941E073a821EE1ff"
+        }
+      ],
+      "packerGranularities": [
+        10000,
+        20000,
+        40000,
+        80000,
+        160000,
+        320000,
+        640000,
+        1280000,
+        2560000,
+        5120000,
+        10240000
+      ]
+    }
+  ],
+  "bridges": [
+    {
+      "type": "wormhole",
+      "name": "Wormhole Bridge"
+    }
+  ],
+  "circuits": [
+    {
+      "name": "zokrates-1.0-transaction1x0",
+      "type": "transaction1x0",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x0.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x0.program.gz"
+      ],
+      "programFileChecksum": "c45aed48ec60e6867dc9eb42e1cc06049f1ed86148022fa38c008ab685a434372b279d9f1c3a99cc52676ce5171772fe60efae0f6994cfb12fc79135256d80c1",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x0.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x0.abi.json"
+      ],
+      "abiFileChecksum": "13c258996658631e46298754315fd4501d593ccfa271ae8992fbeb1bf7c3172b37ae072501a6fe66878ad175b5586290c668bbff7156b9fd6c5f4a54c3baa0f3",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x0.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x0.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "0b2fc96bb06dee3e3a02d3fbc7407ac1372a95004797d6c4a2764a8176443cceb4026cf7330d601717bfb726280b712296a74fe3f1ff5c5fe839c1238ab24559",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x0.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x0.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "7b4fd732d62b33da272afaad1d8242bad8910677fa61a3b74f48e6a14c8f0c7f7db4110ddf65c26af7114a44f43a254f5cfc55824b34933ed574497b8541183e"
+    },
+    {
+      "name": "zokrates-1.0-transaction1x1",
+      "type": "transaction1x1",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x1.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x1.program.gz"
+      ],
+      "programFileChecksum": "95111e448ccd3f0a112c194205fde7360a3a47e17c4adba5c6e594e7f3d1e5f7dfe684635bc72a303b0de472efb238fc499a6c05a530543d7048b9785f4cd4bd",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x1.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x1.abi.json"
+      ],
+      "abiFileChecksum": "a3462b251f6e2ef1aae502f0a0818752a289ed64f00e4e07b273e484bef0a6c0d87b3d686c6ecc1ed838f5ab20d27af4781a84048c10a6aac56c2e9259dd7b84",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x1.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x1.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "e3f861f249ffa066b78ede88fd3b7f409d25a143e42852eb8b7628cb5da70667fecdb3bd8a937b8bff417751f7c82f6c9de49e1f63d646e0de772a15b732b3d6",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x1.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x1.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "87b3a4d8ee423fc081d651cf81c1139866e0be461ba784e3dcb5c1048a843b74ceb79c20d654f4496442479bb68d12b0fdc39af4247a79b3b62586e67108613e"
+    },
+    {
+      "name": "zokrates-1.0-transaction1x2",
+      "type": "transaction1x2",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x2.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x2.program.gz"
+      ],
+      "programFileChecksum": "8888f6c9302192f747a61510745ca1a9964ff89fe99280a98b72e65104bd20013b052773065c400f0d5236c81c08240cc20af7e46c285fd5911cb47ca9929ba2",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x2.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x2.abi.json"
+      ],
+      "abiFileChecksum": "12438dfda8d4b5257426e5b6a13d623b2d0946f93e6969dce3147d4c28c880a6e15359901586734c1faf22d6d520d5b5f4be23daab033cc722e7682f0ee2e28e",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x2.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x2.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "a6a75e2c86321912c2a470a7cbfbe631f68f9e48c7f0c5739e38ad99e352503b8c3b04e8d26fc3ccaa8052a50826883a164cbfe9ac0a3f93fab96b74d0767318",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction1x2.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction1x2.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "10609695f46c0286bfafd4a5e275fd162cef22a4f293956f72154ab177f6b7bb1021d55d90d0ee0a12e7ce461ae7c7aad728175d83a9bb24e0b94c36d03f3769"
+    },
+    {
+      "name": "zokrates-1.0-transaction2x0",
+      "type": "transaction2x0",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x0.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x0.program.gz"
+      ],
+      "programFileChecksum": "a54f495e520dc362c628733fa9fad72a33a86bd4ba928a50ec471de7280239936090c7c2153d4dc5ebff7e4233eebf3884aae1d8612439ed82b8c113394c763a",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x0.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x0.abi.json"
+      ],
+      "abiFileChecksum": "cbce63dee0abb83093de82a90e1108ec5293e9a50561173717df5b6f6e32bba1d1ef8801cbed3be2113d0a9d30a157be68e8f5fec8fef48f894284fbef8a7549",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x0.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x0.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "1666eecbde7832365083d85d38ee57a2181583da6ca9bccce1c0cb9ad933bfd210e8a0c146d0113215d5d264604dda8d31db1e73cf46aef8d3f0b7bade5eeedb",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x0.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x0.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "3a51a0e3c133d2e62675b862d9c12a385151cbcec03936a7849d91110a1b693f46682b5d522bb917ddbe63cf0ceb5e52e49d2f8c435e1e7f32c10d496e8de1fa"
+    },
+    {
+      "name": "zokrates-1.0-transaction2x1",
+      "type": "transaction2x1",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x1.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x1.program.gz"
+      ],
+      "programFileChecksum": "32ac4605305e6f959989026c23459d18c77b1df3f0d8702f46a71a0d4e49ee6fcbf9c0623f311d4fb455366e2dd96ef623bc0b1ec5480309bc8c8b4ef5ca2dae",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x1.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x1.abi.json"
+      ],
+      "abiFileChecksum": "165a34c3bb911a351205befe35547ee18b8eed1b1c7ecbb487816f68bccb674d19dc2dee1265324d79d69fd737e0013dad393c00f6cb4ddd4de6cc9dbc57f23f",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x1.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x1.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "513d6000e20901780eb0bda9c233259ff92cd946f97d29bcdec48b60f8e98de4af6010f301016f08ede91b9518a1cc4e48b9305efb6e968a582583a15a804711",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x1.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x1.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "2a5462993d5ab38223502aceb8dd0597a908e7d6d92df347c1797d76575149999d1cddc9919d459ab47a53f8b8ae7f3fcfddb416c4ff35e5a767456bee5347f0"
+    },
+    {
+      "name": "zokrates-1.0-transaction2x2",
+      "type": "transaction2x2",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x2.program.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x2.program.gz"
+      ],
+      "programFileChecksum": "d064fcbf777870e46c8796b71e07f716290291b79a9e102ac570c53bf41d0466252455d03c6a8bcd522cc7e84e046fef3bd735089de04e542893c45e6b6da0ae",
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x2.abi.json",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x2.abi.json"
+      ],
+      "abiFileChecksum": "48a9c41a998f259e6d4230c4ee48666c3023e1d07ea5be96a7c3f0162c452d6661cedce248f95342c5130ba60d4149977adef61ab3080ed1e7a4cbb9dd10e35f",
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x2.pkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x2.pkey.gz"
+      ],
+      "provingKeyFileChecksum": "fa57215b0f6cd5d412f28c666ce69ee6e3ea35cac0ee6e32351bbc2044de6c999c3dc08fd061d47538b1c68bdecfc398388e8efb10c94831e74671b49d26825d",
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Transaction2x2.vkey.gz",
+        "https://raw.githubusercontent.com/mystikonetwork/mystiko-static/016c9481c44e656feb1f29f1eadd0f0ea683f1dc/circuits/zokrates/production/Transaction2x2.vkey.gz"
+      ],
+      "verifyingKeyFileChecksum": "44294079956f8db92a3ab92601ee33a7f461a9b08c9cd76b464a02f2e104e8d72dfd768270a02736be5d0da851864d59157d0abcadf4629457fb68133978091a"
+    },
+    {
+      "name": "zokrates-1.0-rollup1",
+      "type": "rollup1",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup2",
+      "type": "rollup2",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup2.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup2.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup2.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup2.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup4",
+      "type": "rollup4",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup4.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup4.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup4.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup4.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup8",
+      "type": "rollup8",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup8.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup8.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup8.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup8.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup16",
+      "type": "rollup16",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup16.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup16.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup16.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup16.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup32",
+      "type": "rollup32",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup32.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup32.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup32.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup32.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup64",
+      "type": "rollup64",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup64.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup64.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup64.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup64.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup128",
+      "type": "rollup128",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup128.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup128.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup128.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup128.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup256",
+      "type": "rollup256",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup256.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup256.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup256.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup256.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup512",
+      "type": "rollup512",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup512.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup512.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup512.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup512.vkey.gz"
+      ]
+    },
+    {
+      "name": "zokrates-1.0-rollup1024",
+      "type": "rollup1024",
+      "isDefault": true,
+      "programFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1024.program.gz"
+      ],
+      "abiFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1024.abi.json"
+      ],
+      "provingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1024.pkey.gz"
+      ],
+      "verifyingKeyFile": [
+        "https://static.mystiko.network/circuits/zokrates/production/016c948/Rollup1024.vkey.gz"
+      ]
+    }
+  ],
+  "indexer": {
+    "url": "https://indexer.mystiko.network",
+    "timeoutMs": 120000
+  },
+  "packer": {
+    "url": "https://static.mystiko.network/packer/v1",
+    "version": 1,
+    "clientTimeoutMs": 30000
+  },
+  "sequencer": {
+    "host": "sequencer.mystiko.network",
+    "isSsl": true
+  },
+  "screening": {
+    "url": "https://screening.mystiko.network",
+    "version": 1,
+    "timeoutMs": 20000
+  },
+  "countryBlacklist": [
+    "AF",
+    "DZ",
+    "BD",
+    "BO",
+    "CO",
+    "KP",
+    "EC",
+    "EG",
+    "IR",
+    "IQ",
+    "MA",
+    "NP",
+    "PK",
+    "CN",
+    "QA",
+    "SA",
+    "TN",
+    "AE",
+    "US"
+  ]
+}

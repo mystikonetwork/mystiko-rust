@@ -265,7 +265,7 @@ fn build_mock_provider_with_queued_event(log_count: u32) -> MockProvider {
     let mut mock_provider = MockProvider::new();
     mock_provider.expect_request().returning(move |method, _| match method {
         "eth_getTransactionReceipt" => {
-            let logs = vec![
+            let logs = &[
                 Log {
                     address: Address::from_str("0x00b73dbC8C370CA7e5F00b778280596383b62929").unwrap(),
                     block_hash: Some(H256::from_str("0x224ac34e68f04a2d134affb0bf9181bae2cc4e7376a60687c072119247fb0e78").unwrap()),
@@ -321,7 +321,7 @@ fn build_mock_provider_with_cross_chain_event(log_count: u32) -> MockProvider {
     let mut mock_provider = MockProvider::new();
     mock_provider.expect_request().returning(move |method, _| match method {
         "eth_getTransactionReceipt" => {
-            let logs = vec![
+            let logs = &[
                 Log {
                     address: Address::from_str("0x961F315A836542e603A3df2E0dd9d4ECd06ebC67").unwrap(),
                     block_hash: Some(

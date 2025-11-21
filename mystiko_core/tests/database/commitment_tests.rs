@@ -70,7 +70,7 @@ async fn test_commitments_crud() {
     // testing insert_batch
     inserted_commitments.extend(
         commitments
-            .insert_batch(&vec![
+            .insert_batch(&[
                 Commitment {
                     chain_id: 5,
                     contract_address: String::from("0x4fd0ade06b9654437f46EA59e6edEe056F9d5EF7"),
@@ -230,7 +230,7 @@ async fn test_commitments_crud() {
     assert_eq!(commitments.count_all().await.unwrap(), 2);
     // testing delete_batch
     commitments
-        .delete_batch(&vec![inserted_commitments[1].clone()])
+        .delete_batch(&[inserted_commitments[1].clone()])
         .await
         .unwrap();
     assert_eq!(commitments.count_all().await.unwrap(), 1);
