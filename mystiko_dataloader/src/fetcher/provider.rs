@@ -15,7 +15,6 @@ use ethers_core::types::{BlockNumber, Filter, U64};
 use ethers_providers::Middleware;
 use ethers_providers::ProviderError;
 use ethers_providers::Quorum;
-use log::info;
 use mystiko_abi::commitment_pool::{CommitmentIncludedFilter, CommitmentQueuedFilter, CommitmentSpentFilter};
 use mystiko_abi::mystiko_v2_bridge::CommitmentCrossChainFilter;
 use mystiko_config::MystikoConfig;
@@ -513,7 +512,7 @@ async fn fetch_logs<E: EthEvent>(
         to_block = option
             .actual_target_block
             .min(start_block + option.event_filter_size - 1);
-        info!("start_block: {}, to_block: {}", start_block, to_block);
+        log::debug!("start_block: {}, to_block: {}", start_block, to_block);
         let filter = Filter::new()
             .topic0(E::signature())
             .address(address)
@@ -564,7 +563,7 @@ async fn fetch_logs_with_retry(
                     return Err(err.into());
                 }
                 current_retry_time += 1;
-                info!("error: {:?} retry fetch logs: {}", err, current_retry_time);
+                log::error!("error: {:?} retry fetch logs: {}", err, current_retry_time);
             }
         };
     }
@@ -576,7 +575,7 @@ async fn throttle(last_request_time: Option<Instant>, max_requests_per_second: u
         let elapsed = now.duration_since(*last_instant).as_millis();
         let wait_ms = 1000 / max_requests_per_second;
         if elapsed < wait_ms as u128 {
-            info!("wait for: {}", wait_ms as u128 - elapsed);
+            log::debug!("wait for: {}", wait_ms as u128 - elapsed);
             sleep(Duration::from_millis((wait_ms as u128 - elapsed) as u64)).await;
         }
     }
