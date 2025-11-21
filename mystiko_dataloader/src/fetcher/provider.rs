@@ -510,7 +510,6 @@ async fn fetch_logs<E: EthEvent>(
     let mut to_block;
     let mut last_request_time = None;
     loop {
-        last_request_time = throttle(last_request_time, retry_config.max_requests_per_second).await;
         to_block = option
             .actual_target_block
             .min(start_block + option.event_filter_size - 1);
@@ -520,7 +519,8 @@ async fn fetch_logs<E: EthEvent>(
             .address(address)
             .from_block(BlockNumber::Number(U64::from(start_block)))
             .to_block(BlockNumber::Number(U64::from(to_block)));
-        let logs = fetch_logs_with_retry(option, retry_config, filter).await?;
+        let (logs, request_result) = fetch_logs_with_retry(option, retry_config, filter, last_request_time).await?;
+        last_request_time = request_result;
         for log in logs {
             let my_log = Log {
                 address: log.address,
@@ -546,27 +546,27 @@ async fn fetch_logs_with_retry(
     option: &ProviderContractFetchOptions,
     config: &ProviderRetryConfig,
     filter: Filter,
-) -> Result<Vec<ethers_core::types::Log>> {
+    last_request_time: Option<Instant>,
+) -> Result<(Vec<ethers_core::types::Log>, Option<Instant>)> {
     let mut current_retry_time = 1;
+    let mut request_time = last_request_time;
     loop {
-        let ethers_logs = match option
+        request_time = throttle(request_time, config.max_requests_per_second).await;
+        match option
             .provider
             .get_logs(&filter)
             .await
             .map_err(ProviderFetcherError::ProviderError)
         {
-            Ok(logs) => logs,
+            Ok(logs) => return Ok((logs, request_time)),
             Err(err) => {
                 if current_retry_time > config.max_retry_times {
                     return Err(err.into());
                 }
                 current_retry_time += 1;
                 info!("error: {:?} retry fetch logs: {}", err, current_retry_time);
-                tokio::time::sleep(Duration::from_secs(1)).await;
-                continue;
             }
         };
-        return Ok(ethers_logs);
     }
 }
 
