@@ -579,7 +579,7 @@ async fn throttle(last_request_time: Option<Instant>, max_requests_per_second: u
             sleep(Duration::from_millis((wait_ms as u128 - elapsed) as u64)).await;
         }
     }
-    Some(now)
+    Some(Instant::now())
 }
 
 fn build_commitments(events: CommitmentDataEvent) -> Result<Vec<Commitment>> {
