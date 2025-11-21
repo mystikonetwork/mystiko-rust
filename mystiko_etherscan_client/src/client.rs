@@ -365,7 +365,7 @@ impl EtherScanClient {
                 sleep(Duration::from_millis((wait_ms as u128 - elapsed) as u64)).await;
             }
         }
-        *last_request_time = Some(now);
+        *last_request_time = Some(Instant::now());
     }
 
     fn format_url(&self, params: &[String]) -> String {
