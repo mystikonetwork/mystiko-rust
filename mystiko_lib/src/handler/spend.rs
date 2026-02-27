@@ -79,15 +79,12 @@ where
     <M as TryInto<SendSpendWithGrpcRequest>>::Error: std::error::Error + Send + Sync + 'static,
 {
     match message.try_into() {
-        Ok(message) => {
-            if message.send_options.is_some() && message.client_options.is_some() {
-                return runtime().block_on(internal::send_with_grpc(
-                    message.send_options.unwrap(),
-                    message.client_options.unwrap(),
-                ));
+        Ok(message) => match (message.send_options, message.client_options) {
+            (Some(send_options), Some(client_options)) => {
+                runtime().block_on(internal::send_with_grpc(send_options, client_options))
             }
-            ApiResponse::unknown_error("unexpected message")
-        }
+            _ => ApiResponse::unknown_error("unexpected message"),
+        },
         Err(err) => ApiResponse::error(SpendError::DeserializeMessageError, err),
     }
 }
