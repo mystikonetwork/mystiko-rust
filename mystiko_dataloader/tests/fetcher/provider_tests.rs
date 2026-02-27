@@ -97,6 +97,169 @@ async fn test_fulldata_fetch() {
 }
 
 #[tokio::test]
+async fn test_skip_to_block_less_than_target() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
+    let provider_fetcher: ProviderFetcher<FullData, TestProvders> =
+        ProviderFetcher::<FullData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .concurrency(2u32)
+            .build();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let test_chain_id = 137;
+    let test_address = "0xCB255075f38C75EAf2DE8A72897649dba9B90299";
+    let test_start_block: u64 = 45564268;
+    let test_end_block: u64 = 45565268;
+    let contract_config = mystiko_config
+        .find_contract_by_address(test_chain_id, test_address)
+        .unwrap();
+    let contract_fetch_option = vec![ContractFetchOptions::builder()
+        .contract_config(contract_config.clone())
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .build()];
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(Some(contract_fetch_option))
+        // skip_to_block is before the actual_target_block so logs should still be fetched
+        .skip_to_block(45565000u64)
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.chain_id, test_chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, test_address);
+    assert!(result.contract_results[0].result.is_ok());
+    let result = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(result.start_block, test_start_block);
+    // end_block is limited by current_safe_block (45565267) in mock provider
+    assert_eq!(result.end_block, 45565267);
+    assert!(result.data.is_some());
+    let data = result.data.as_ref().unwrap();
+    // behaviour should be equivalent to test_fulldata_fetch as skip_to_block is before actual_target_block
+    assert_eq!(data.commitments.len(), 2);
+    assert_eq!(data.commitments[0].block_number, 45564344);
+    assert_eq!(data.nullifiers.len(), 1);
+    assert_eq!(data.nullifiers[0].block_number, 45565081);
+}
+
+#[tokio::test]
+async fn test_skip_to_block_less_than_start_block() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
+    let provider_fetcher: ProviderFetcher<FullData, TestProvders> =
+        ProviderFetcher::<FullData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .concurrency(2u32)
+            .build();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let test_chain_id = 137;
+    let test_address = "0xCB255075f38C75EAf2DE8A72897649dba9B90299";
+    let test_start_block: u64 = 45564268;
+    let test_end_block: u64 = 45565268;
+    let contract_config = mystiko_config
+        .find_contract_by_address(test_chain_id, test_address)
+        .unwrap();
+    let contract_fetch_option = vec![ContractFetchOptions::builder()
+        .contract_config(contract_config.clone())
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .build()];
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(Some(contract_fetch_option))
+        // skip_to_block is before start_block; we still expect normal behaviour
+        .skip_to_block(45564260u64)
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.chain_id, test_chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, test_address);
+    assert!(result.contract_results[0].result.is_ok());
+    let result = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(result.start_block, test_start_block);
+    assert_eq!(result.end_block, 45565267);
+    assert!(result.data.is_some());
+    let data = result.data.as_ref().unwrap();
+    assert_eq!(data.commitments.len(), 2);
+    assert_eq!(data.commitments[0].block_number, 45564344);
+    assert_eq!(data.nullifiers.len(), 1);
+    assert_eq!(data.nullifiers[0].block_number, 45565081);
+}
+
+#[tokio::test]
+async fn test_skip_to_block_after_target() {
+    let _ = env_logger::builder()
+        .filter_module("mystiko_dataloader", LevelFilter::Debug)
+        .try_init();
+    let provider_fetcher: ProviderFetcher<FullData, TestProvders> =
+        ProviderFetcher::<FullData, TestProvders>::builder()
+            .providers(Arc::new(TestProvders))
+            .concurrency(2u32)
+            .build();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let test_chain_id = 137;
+    let test_address = "0xCB255075f38C75EAf2DE8A72897649dba9B90299";
+    let test_start_block: u64 = 45564268;
+    let test_end_block: u64 = 45565268;
+    let contract_config = mystiko_config
+        .find_contract_by_address(test_chain_id, test_address)
+        .unwrap();
+    let contract_fetch_option = vec![ContractFetchOptions::builder()
+        .contract_config(contract_config.clone())
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .build()];
+    let fetch_options = FetchOptions::builder()
+        .chain_id(test_chain_id)
+        .start_block(test_start_block)
+        .target_block(test_end_block)
+        .config(Arc::clone(&mystiko_config))
+        .contract_options(Some(contract_fetch_option))
+        // skip_to_block is after the actual_target_block (45565267) so no logs should be fetched
+        .skip_to_block(45565267u64)
+        .build();
+    let result = provider_fetcher.fetch(&fetch_options).await;
+    assert!(result.is_ok());
+    let result = result.unwrap();
+    assert_eq!(result.chain_id, test_chain_id);
+    assert_eq!(result.contract_results.len(), 1);
+    assert_eq!(result.contract_results[0].address, test_address);
+    assert!(result.contract_results[0].result.is_ok());
+    let result = result.contract_results[0].result.as_ref().unwrap();
+    assert_eq!(result.start_block, test_start_block);
+    assert_eq!(result.end_block, 45565267);
+    assert!(result.data.is_some());
+    let data = result.data.as_ref().unwrap();
+    // with skip_to_block >= actual_target_block we expect no commitments/nullifiers
+    assert_eq!(data.commitments.len(), 0);
+    assert_eq!(data.nullifiers.len(), 0);
+}
+
+#[tokio::test]
 async fn test_litedata_fetch() {
     let _ = env_logger::builder()
         .filter_module("mystiko_dataloader", LevelFilter::Debug)

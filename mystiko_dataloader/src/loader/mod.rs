@@ -43,6 +43,7 @@ pub struct LoadFetcherOption {
     #[builder(default = DEFAULT_FETCHER_FETCH_TIMEOUT_MS)]
     pub fetch_timeout_ms: u64,
     pub skips: HashMap<String, LoadFetcherSkipOption>,
+    pub skip_to_block: Option<u64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, TypedBuilder)]
