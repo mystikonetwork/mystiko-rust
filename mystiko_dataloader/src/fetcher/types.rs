@@ -28,6 +28,8 @@ pub struct FetchOptions {
     pub start_block: u64,
     pub target_block: u64,
     #[builder(default)]
+    pub skip_to_block: Option<u64>,
+    #[builder(default)]
     pub contract_options: Option<Vec<ContractFetchOptions>>,
 }
 

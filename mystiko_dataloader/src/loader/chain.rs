@@ -53,6 +53,7 @@ struct FetcherRunParams<F> {
     pub(crate) fetcher: Arc<F>,
     pub(crate) options: FetcherOptions,
     pub(crate) loaded_block: u64,
+    pub(crate) skip_to_block: Option<u64>,
 }
 
 #[derive(Debug, Clone, TypedBuilder)]
@@ -275,6 +276,7 @@ where
                 .fetcher(fetcher_wrapper.fetcher.clone())
                 .options(fetcher_wrapper.options.clone())
                 .loaded_block(block)
+                .skip_to_block(options.skip_to_block)
                 .build()),
             Ok(Err(e)) => {
                 log::warn!("query_loaded_blocks of fetcher(name={:?}) failed: {:?}", name, e);
@@ -429,6 +431,7 @@ where
                 .start_block(start_block)
                 .target_block(fetcher.loaded_block)
                 .contract_options(Some(contract_options))
+                .skip_to_block(fetcher.skip_to_block)
                 .build();
             Ok(Some(options))
         } else {

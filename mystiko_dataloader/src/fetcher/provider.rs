@@ -113,6 +113,7 @@ struct ProviderContractFetchOptions {
     pub(crate) bridge_type: BridgeType,
     pub(crate) start_block: u64,
     pub(crate) actual_target_block: u64,
+    pub(crate) skip_to_block: Option<u64>,
     pub(crate) disabled_at: bool,
     pub(crate) event_filter_size: u64,
     pub(crate) provider: Arc<Provider>,
@@ -336,6 +337,7 @@ fn to_options(
                         .bridge_type(contract_config.bridge_type().clone())
                         .start_block(option.start_block)
                         .actual_target_block(option.target_block.min(current_block_num))
+                        .skip_to_block(option.skip_to_block)
                         .disabled_at(option.start_block > contract_config.disabled_at().unwrap_or(option.start_block))
                         .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
@@ -356,6 +358,7 @@ fn to_options(
                         .bridge_type(contract_option.contract_config.bridge_type().clone())
                         .start_block(start_block)
                         .actual_target_block(target_block.min(current_block_num))
+                        .skip_to_block(option.skip_to_block)
                         .disabled_at(start_block > contract_option.contract_config.disabled_at().unwrap_or(start_block))
                         .event_filter_size(chain_config.event_filter_size().max(1))
                         .provider(Arc::clone(&provider))
@@ -500,12 +503,17 @@ async fn fetch_logs<E: EthEvent>(
     if option.start_block > option.actual_target_block {
         return Ok(events);
     }
+    let mut start_block = match option.skip_to_block {
+        Some(skip_to_block) if option.actual_target_block <= skip_to_block => {
+            return Ok(events);
+        }
+        Some(skip_to_block) => (skip_to_block + 1).max(option.start_block),
+        None => option.start_block,
+    };
     let address = option
         .contract_address
         .parse::<Address>()
         .map_err(ProviderFetcherError::FromHexError)?;
-
-    let mut start_block = option.start_block;
     let mut to_block;
     let mut last_request_time = None;
     loop {
