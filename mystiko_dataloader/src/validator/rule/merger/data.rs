@@ -147,7 +147,7 @@ where
     }
 
     fn sort_by_leaf_index(&self, commitments: &mut [ValidateCommitment]) {
-        commitments.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
+        commitments.sort_by_key(|a| a.leaf_index);
     }
 
     fn merge_fetched_commitment(
