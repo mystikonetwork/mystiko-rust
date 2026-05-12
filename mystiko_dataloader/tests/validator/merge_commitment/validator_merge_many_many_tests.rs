@@ -433,7 +433,7 @@ async fn test_many_queued_many_included_different_commitment() {
                 .build(),
         );
     }
-    merged_cms.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
+    merged_cms.sort_by_key(|a| a.leaf_index);
 
     let contract_data = ContractData::builder()
         .address(contract_address)
@@ -551,7 +551,7 @@ async fn test_many_queued_many_included_handler_disorder_commitment() {
                 .build(),
         );
     }
-    merged_cms.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
+    merged_cms.sort_by_key(|a| a.leaf_index);
 
     let contract_data = ContractData::builder()
         .address(contract_address)
