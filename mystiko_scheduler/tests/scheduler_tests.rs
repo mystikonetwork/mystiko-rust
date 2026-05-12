@@ -259,6 +259,35 @@ async fn test_http_custom_status_with_error() {
     assert!(status_response.status().is_server_error());
 }
 
+#[tokio::test]
+async fn test_disable_status_server() {
+    setup();
+    let task = Arc::<CounterTask>::default();
+    let scheduler_options = SchedulerOptions::<Option<_>, CounterTask>::builder()
+        .task(task)
+        .status_server_port(23222u16)
+        .enable_status_server(false)
+        .build();
+    let scheduler = Scheduler::new(scheduler_options);
+    let options = StartOptions::<anyhow::Error>::builder()
+        .interval_ms(5000u64)
+        .start_delay_ms(10u64)
+        .build();
+    scheduler.start(None, options).await.unwrap();
+    assert!(scheduler.started().await);
+
+    // With status server disabled, the port must NOT be listening.
+    let client = hyper::Client::new();
+    let status_uri: http::Uri = "http://localhost:23222/status".parse().unwrap();
+    assert!(
+        client.get(status_uri).await.is_err(),
+        "status server should not be listening when enable_status_server=false"
+    );
+
+    scheduler.stop().await.unwrap();
+    assert!(!scheduler.started().await);
+}
+
 fn setup() {
     let _ = env_logger::builder()
         .filter_module("mystiko_scheduler", log::LevelFilter::Debug)

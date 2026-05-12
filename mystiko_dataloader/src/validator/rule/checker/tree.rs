@@ -80,7 +80,7 @@ where
         if query_result.end_block != target_block {
             return Err(MerkleTreeCheckerError::TargetBlockError(target_block, query_result.end_block).into());
         }
-        query_result.result.sort_by(|a, b| a.leaf_index.cmp(&b.leaf_index));
+        query_result.result.sort_by_key(|a| a.leaf_index);
         let mut elements = query_result
             .result
             .iter()

@@ -15,6 +15,9 @@ pub struct SchedulerOptions<I, T: SchedulerTask<I>> {
     #[builder(default)]
     pub shutdown_signals: Option<Vec<tokio::signal::unix::SignalKind>>,
     #[cfg(feature = "status")]
+    #[builder(default = true)]
+    pub enable_status_server: bool,
+    #[cfg(feature = "status")]
     #[builder(default = String::from("0.0.0.0"))]
     pub status_server_bind_address: String,
     #[cfg(feature = "status")]
@@ -36,7 +39,7 @@ pub struct Scheduler<I, T: SchedulerTask<I>> {
     #[cfg(feature = "signal")]
     shutdown_signals: Vec<tokio::signal::unix::SignalKind>,
     #[cfg(feature = "status")]
-    status_server: Arc<mystiko_status_server::StatusServer>,
+    status_server: Option<Arc<mystiko_status_server::StatusServer>>,
 }
 
 impl<I, T> Scheduler<I, T>
@@ -63,13 +66,15 @@ where
                 tokio::signal::unix::SignalKind::interrupt(),
             ]),
             #[cfg(feature = "status")]
-            status_server: Arc::new(
-                mystiko_status_server::StatusServer::builder()
-                    .bind_address(options.status_server_bind_address)
-                    .port(options.status_server_port)
-                    .status(options.status_getter)
-                    .build(),
-            ),
+            status_server: options.enable_status_server.then(|| {
+                Arc::new(
+                    mystiko_status_server::StatusServer::builder()
+                        .bind_address(options.status_server_bind_address)
+                        .port(options.status_server_port)
+                        .status(options.status_getter)
+                        .build(),
+                )
+            }),
         }
     }
 
@@ -112,7 +117,9 @@ where
             #[cfg(feature = "signal")]
             self.bind_shutdown_signals().await?;
             #[cfg(feature = "status")]
-            self.status_server.start().await?;
+            if let Some(server) = &self.status_server {
+                server.start().await?;
+            }
         } else {
             log::warn!("scheduler has already been started, skipping this start");
         }
@@ -129,7 +136,9 @@ where
 
     pub async fn stop(&self) -> Result<(), SchedulerError> {
         #[cfg(feature = "status")]
-        self.status_server.stop().await?;
+        if let Some(server) = &self.status_server {
+            server.stop().await?;
+        }
         self.executor.stop().await?;
         self.join().await
     }
@@ -194,7 +203,7 @@ async fn start_executor<I, T, R, A>(
     options: StartOptions<T::Error, R, A>,
     start_sender: Sender<()>,
     executor: Arc<ScheduleExecutor<I, T>>,
-    #[cfg(feature = "status")] status_server: Arc<mystiko_status_server::StatusServer>,
+    #[cfg(feature = "status")] status_server: Option<Arc<mystiko_status_server::StatusServer>>,
 ) -> Result<(), SchedulerError>
 where
     T: SchedulerTask<I> + 'static,
@@ -205,6 +214,8 @@ where
 {
     executor.start(run_args, options, start_sender).await?;
     #[cfg(feature = "status")]
-    status_server.stop().await?;
+    if let Some(server) = &status_server {
+        server.stop().await?;
+    }
     Ok(())
 }
