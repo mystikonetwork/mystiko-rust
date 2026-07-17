@@ -21,6 +21,8 @@ pub const ETHERSCAN_FETCHER_NAME: &str = "etherscan";
 pub enum EtherscanFetcherError {
     #[error("etherscan fetcher no chain config found for chain id: {0}")]
     UnsupportedChainError(u64),
+    #[error("etherscan fetcher invalid current block 0 for chain id: {0}")]
+    InvalidCurrentBlock(u64),
 }
 
 #[derive(Debug, TypedBuilder)]
@@ -108,6 +110,14 @@ where
             .await
             .map_err(|err| FetcherError::AnyhowError(err.into()))?
             .as_u64();
+        // A live chain's head can never be block 0; a client reporting 0 is a bogus/failover
+        // response. Reject the raw head (before the delay subtraction) so this round fails fast
+        // instead of collapsing the fetch target to 0 and persisting a corrupt loaded_block.
+        if current_block == 0 {
+            return Err(FetcherError::AnyhowError(
+                EtherscanFetcherError::InvalidCurrentBlock(chain_id).into(),
+            ));
+        }
         let current_safe_block = current_block.saturating_sub(delay_num_blocks);
         Ok((current_safe_block, client))
     }

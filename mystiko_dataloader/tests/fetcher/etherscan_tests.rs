@@ -544,6 +544,39 @@ async fn test_chain_loaded_block() {
 }
 
 #[tokio::test]
+async fn test_chain_loaded_block_zero_current_block() {
+    // A client that reports head block 0 (a bogus failover response) must cause
+    // chain_loaded_block to error rather than return a 0/near-0 safe block.
+    let mut mocked_server = mockito::Server::new_async().await;
+    let test_chain_id = 1u64;
+    let test_api_key = "test_api_key";
+    let path = mocked_server
+        .mock("GET", "/api")
+        .match_query(Matcher::AllOf(vec![
+            Matcher::UrlEncoded("action".into(), "eth_blockNumber".into()),
+            Matcher::UrlEncoded("apikey".into(), test_api_key.into()),
+            Matcher::UrlEncoded("module".into(), "proxy".into()),
+        ]))
+        .with_status(200)
+        .with_body("{\"jsonrpc\": \"2.0\",\"id\": 1,\"result\": \"0x0\"}")
+        .with_header("content-type", "application/json")
+        .create_async()
+        .await;
+    let etherscan_fetcher =
+        build_etherscan_fetcher::<LiteData>(&mocked_server.url(), test_chain_id, 1000u64, test_api_key, 1u32);
+    let config = Arc::new(
+        MystikoConfig::from_json_file("tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder().chain_id(1u64).config(config).build();
+    let result = etherscan_fetcher.chain_loaded_block(&options).await;
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("invalid current block"));
+    path.assert_async().await;
+}
+
+#[tokio::test]
 async fn test_chain_loaded_block_with_delay() {
     let mut mocked_server = mockito::Server::new_async().await;
     let test_api_key = "test_api_key";

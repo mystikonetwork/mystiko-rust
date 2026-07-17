@@ -422,7 +422,11 @@ where
                         .build()
                 }
             };
-            contract.data.update_loaded_block(contract_data.end_block);
+            // loaded_block must only advance here: a transient bad fetch (e.g. a provider
+            // reporting head 0) can carry an end_block below the stored value, and regressing
+            // it would force a full re-scan. Reset lowers it deliberately via a different path.
+            let new_loaded_block = std::cmp::max(contract.data.get_loaded_block(), contract_data.end_block);
+            contract.data.update_loaded_block(new_loaded_block);
             contract.updated_at = current_timestamp();
             self.upsert_contract_data(contract_update, &contract).await?;
         }
