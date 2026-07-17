@@ -122,7 +122,7 @@ impl EtherScanClient {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_call".to_string());
         params.push("module=proxy".to_string());
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         params.push(format!("to={}", to));
         params.push(format!("data={}", function_encoded_data));
         params.push(format!("tag={}", block_tag.unwrap_or("latest")));
@@ -141,7 +141,7 @@ impl EtherScanClient {
         let mut params: Vec<String> = vec![];
         params.push("action=eth_blockNumber".to_string());
         params.push("module=proxy".to_string());
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
@@ -160,7 +160,7 @@ impl EtherScanClient {
         params.push("action=eth_getBlockByNumber".to_string());
         params.push("module=proxy".to_string());
         params.push("boolean=false".to_string());
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         params.push(format!("tag={:x}", block_number));
         let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
@@ -175,7 +175,7 @@ impl EtherScanClient {
         params.push("action=eth_getTransactionByHash".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
@@ -189,7 +189,7 @@ impl EtherScanClient {
         params.push("action=eth_getTransactionReceipt".to_string());
         params.push("module=proxy".to_string());
         params.push(format!("txhash={}", transaction_hash));
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         let url = self.format_url(&params);
         let options = GetOptions::<String>::builder()
             .url(url)
@@ -213,10 +213,10 @@ impl EtherScanClient {
         params.push("module=logs".to_string());
         params.push("page=1".to_string());
         params.push(format!("toBlock={}", options.to_block));
-        params.push(format!("offset={}", &self.offset));
+        params.push(format!("offset={}", self.offset));
         params.push(format!("address={}", options.address));
         params.push(format!("topic0=0x{:x}", R::signature()));
-        params.push(format!("apikey={}", &self.api_key));
+        params.push(format!("apikey={}", self.api_key));
         #[allow(clippy::mutable_key_type)]
         let mut raw_logs = HashSet::new();
         let mut events: Vec<Event<R>> = Vec::new();

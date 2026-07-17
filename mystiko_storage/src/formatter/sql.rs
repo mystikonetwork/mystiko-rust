@@ -241,7 +241,7 @@ impl StatementFormatter for SqlStatementFormatter {
     ) -> Result<Statement, StorageError> {
         let fields = Document::<T>::columns()
             .iter()
-            .map(|column| format!("`{}`", &column.column_name))
+            .map(|column| format!("`{}`", column.column_name))
             .collect::<Vec<String>>();
         let statement = match filter_option {
             Some(filter) => {
