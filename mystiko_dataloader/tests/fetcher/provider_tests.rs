@@ -27,6 +27,8 @@ impl Providers for TestProvders {
             Ok(Arc::new(mock_chain_56(test_provider)))
         } else if chain_id == 1 {
             Ok(Arc::new(mock_chain_1(test_provider)))
+        } else if chain_id == 8453 {
+            Ok(Arc::new(mock_chain_zero_head(test_provider)))
         } else {
             Ok(Arc::new(mock_chain_5(test_provider)))
         }
@@ -565,6 +567,26 @@ async fn test_chain_loaded_block_too_big_delay() {
     assert_eq!(provider_fetcher.chain_loaded_block(&options).await.unwrap(), 0u64);
 }
 
+#[tokio::test]
+async fn test_chain_loaded_block_zero_current_block() {
+    // A provider that reports head block 0 (a bogus failover response) must cause
+    // chain_loaded_block to error rather than return a 0/near-0 safe block, which
+    // would otherwise collapse the fetch target and corrupt the stored loaded_block.
+    let provider_fetcher: ProviderFetcher<LiteData, TestProvders> = Arc::new(TestProvders).into();
+    let mystiko_config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/config/mystiko.json")
+            .await
+            .unwrap(),
+    );
+    let options = ChainLoadedBlockOptions::builder()
+        .chain_id(8453u64)
+        .config(mystiko_config.clone())
+        .build();
+    let result = provider_fetcher.chain_loaded_block(&options).await;
+    assert!(result.is_err());
+    assert!(result.unwrap_err().to_string().contains("invalid current block"));
+}
+
 #[derive(Debug, Default)]
 struct MockProviderRetryPolicy;
 
@@ -772,6 +794,13 @@ fn mock_chain_5(test_provider: MockProvider) -> Provider {
     // current_block_num
     test_provider.push(U64::from(8896966)).unwrap();
 
+    create_mock_provider(&test_provider)
+}
+
+fn mock_chain_zero_head(test_provider: MockProvider) -> Provider {
+    // eth_blockNumber returns 0, simulating a flaky/failover RPC endpoint that
+    // reports an impossible head block for a live chain.
+    test_provider.push(U64::from(0)).unwrap();
     create_mock_provider(&test_provider)
 }
 

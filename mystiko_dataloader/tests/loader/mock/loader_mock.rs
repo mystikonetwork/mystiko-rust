@@ -181,7 +181,7 @@ pub fn contract_data_partial_eq(a: &HashMap<String, ContractData<FullData>>, b: 
                 return false;
             }
         } else {
-            println!("Address not found: {}", &d.address);
+            println!("Address not found: {}", d.address);
             return false;
         }
     }

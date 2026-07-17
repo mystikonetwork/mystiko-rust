@@ -100,7 +100,7 @@ where
         Signer: TransactionSigner + 'static,
     {
         let mut tx_hashes = vec![];
-        for (_, asset_context) in assets_context.iter() {
+        for asset_context in assets_context.values() {
             if let Some(tx_hash) = self
                 .asset_approve(context, asset_context, options, signer.clone(), owner)
                 .await?

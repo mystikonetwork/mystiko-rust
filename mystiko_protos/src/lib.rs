@@ -2,6 +2,7 @@
 #[allow(clippy::needless_borrows_for_generic_args)]
 #[allow(clippy::empty_docs)]
 #[allow(clippy::needless_lifetimes)]
+#[allow(clippy::useless_borrows_in_formatting)]
 mod gen;
 
 pub mod api;

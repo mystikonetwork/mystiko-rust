@@ -993,6 +993,68 @@ async fn test_full_data_handle() {
 }
 
 #[tokio::test]
+async fn test_handle_does_not_lower_loaded_block() {
+    // Regression guard: a transient bad fetch (e.g. a provider reporting head 0)
+    // can carry an end_block below the contract's stored loaded_block. Handling it
+    // must never regress loaded_block, which would force a full re-scan.
+    let (database_handler, collection, _config) = setup::<FullData>().await.unwrap();
+    let mock_contracts = [Contract {
+        chain_id: 1_u64,
+        contract_address: "address1".to_string(),
+        loaded_block: 2000_u64,
+    }];
+    collection.insert_batch(&mock_contracts).await.unwrap();
+
+    // A bogus empty fetch whose end_block (0) is below the stored loaded_block (2000).
+    let regressing_chain_data = ChainData::builder()
+        .chain_id(1_u64)
+        .contracts_data(vec![ContractData::builder()
+            .address("address1")
+            .start_block(0_u64)
+            .end_block(0_u64)
+            .data(FullData::builder().commitments(vec![]).nullifiers(vec![]).build())
+            .build()])
+        .build();
+    let config = Arc::new(
+        MystikoConfig::from_json_file("./tests/files/handler/config.json")
+            .await
+            .unwrap(),
+    );
+    let handle_result = database_handler
+        .handle(
+            &regressing_chain_data,
+            &HandleOption::builder().config(config.clone()).build(),
+        )
+        .await;
+    assert!(handle_result.is_ok());
+    let loaded_block = database_handler
+        .query_contract_loaded_block(1_u64, "address1")
+        .await
+        .unwrap();
+    assert_eq!(loaded_block, Some(2000_u64));
+
+    // A legitimate fetch whose end_block (3000) is above the stored loaded_block advances it.
+    let advancing_chain_data = ChainData::builder()
+        .chain_id(1_u64)
+        .contracts_data(vec![ContractData::builder()
+            .address("address1")
+            .start_block(2000_u64)
+            .end_block(3000_u64)
+            .data(FullData::builder().commitments(vec![]).nullifiers(vec![]).build())
+            .build()])
+        .build();
+    let handle_result = database_handler
+        .handle(&advancing_chain_data, &HandleOption::builder().config(config).build())
+        .await;
+    assert!(handle_result.is_ok());
+    let loaded_block = database_handler
+        .query_contract_loaded_block(1_u64, "address1")
+        .await
+        .unwrap();
+    assert_eq!(loaded_block, Some(3000_u64));
+}
+
+#[tokio::test]
 async fn test_lite_data_handle() {
     let (database_handler, collection, _config) = setup::<LiteData>().await.unwrap();
     let mock_contracts = [

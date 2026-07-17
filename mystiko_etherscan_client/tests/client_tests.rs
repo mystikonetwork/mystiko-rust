@@ -644,7 +644,7 @@ async fn test_failed_for_max_rate_limit_reached() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=normal&apikey=test_api_key",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::Normal)
         .build();
@@ -675,7 +675,7 @@ async fn test_failed_for_max_rate_limit_reached() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=proxy&apikey=test_api_key",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::JsonRpcProxy)
         .build();
@@ -717,7 +717,7 @@ async fn test_handle_response_failed_for_content_type() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=proxy&apikey=test_api_key",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::JsonRpcProxy)
         .build();
@@ -745,7 +745,7 @@ async fn test_handle_response_failed_for_content_type() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=proxy&apikey=test_api_key",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::JsonRpcProxy)
         .build();
@@ -791,7 +791,7 @@ async fn test_handle_response_failed_for_json_rpc_error() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=proxy&apikey=test_api_key",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::JsonRpcProxy)
         .build();
@@ -841,7 +841,7 @@ async fn test_handle_logs_with_empty_response() {
     let options = GetOptions::<String>::builder()
         .url(format!(
             "{}/api?module=logs&apikey=test_api_key&action=getLogs&address=address&fromBlock=12878100&toBlock=12878100",
-            &ether_scan_client.base_url
+            ether_scan_client.base_url
         ))
         .module(EtherScanModule::Normal)
         .build();

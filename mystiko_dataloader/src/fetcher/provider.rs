@@ -47,6 +47,8 @@ pub enum ProviderFetcherError {
     ProviderError(#[from] ProviderError),
     #[error("unsupported chain id: {0}")]
     UnsupportedChainError(u64),
+    #[error("invalid current block 0 for chain id: {0}")]
+    InvalidCurrentBlock(u64),
 }
 
 pub const DEFAULT_MAX_REQUESTS_PER_SECOND: u32 = 5;
@@ -183,6 +185,14 @@ where
             .await
             .map_err(FetcherError::AnyhowError)?
             .as_u64();
+        // A live chain's head can never be block 0; a provider reporting 0 is a bogus/failover
+        // response. Reject the raw head (before the delay subtraction) so this round fails fast
+        // instead of collapsing the fetch target to 0 and persisting a corrupt loaded_block.
+        if current_block == 0 {
+            return Err(FetcherError::AnyhowError(
+                ProviderFetcherError::InvalidCurrentBlock(chain_id).into(),
+            ));
+        }
         let current_safe_block = current_block.saturating_sub(delay_num_blocks);
         Ok((current_safe_block, provider))
     }
